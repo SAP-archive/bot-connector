@@ -6,7 +6,10 @@ It provides a higher level API to manage several messaging platforms at once, an
 
 ## Documentation
 
-You can find the Connector's documentation [here]().
+You can generate the documentation with the following command:
+```bash
+yarn doc && open doc/index.html
+```
 
 ## Supported Channels
 
@@ -148,11 +151,11 @@ Connector supports several message formats:
 
 ### Issue
 
-If you encounter any issue, please follow this [guide]().
+If you encounter any issue, please follow this [guide](https://github.com/RecastAI/bot-connector/blob/master/ISSUE.md).
 
 ### Contribution
 
-Want to contribute? Great! Please check this [guide]().
+Want to contribute? Great! Please check this [guide](https://github.com/RecastAI/bot-connector/blob/master/CONTRIBUTING.md).
 
 ### License
 
