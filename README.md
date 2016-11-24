@@ -18,7 +18,7 @@ Connector supports the following channels:
 * [Slack](https://github.com/RecastAI/bot-connector/wiki/Channel---Slack)
 * [Messenger](https://github.com/RecastAI/bot-connector/wiki/Channel---Messenger)
 
-More will be added, and you can [contribute]() if you want to.
+More will be added, and you can [contribute](https://github.com/RecastAI/bot-connector/blob/master/CONTRIBUTING.md) if you want to.
 
 You can find more information on each channel in the [wiki](https://github.com/RecastAI/bot-connector/wiki)
 
@@ -159,7 +159,7 @@ Want to contribute? Great! Please check this [guide](https://github.com/RecastAI
 
 ### License
 
-Copyright (c) [2016] Recast.AI
+Copyright (c) [2016] [Recast.AI](https://recast.ai)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
