@@ -1,0 +1,91 @@
+{
+  "name": "connector",
+  "version": "0.0.0",
+  "description": "Recast.AI Bot Connector",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "eslint src config",
+    "start": "npm run build && NODE_ENV=production node dist/index.js",
+    "start-dev": "NODE_ENV=development nodemon src/index.js --exec babel-node",
+    "test": "NODE_ENV=test babel-node src/test.js",
+    "build": "babel src --out-dir dist",
+    "doc": "apidoc -i src/ -o doc/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@git.recast.ai:recast/connector.git"
+  },
+  "author": "Recast <jerome.houdan@recast.ai> (https://recast.ai)",
+  "license": "ISC",
+  "eslintConfig": {
+    "extends": [
+      "zavatta"
+    ],
+    "rules": {
+      "no-sync": 0,
+      "no-undef": 0,
+      "id-length": 0,
+      "camelcase": 0,
+      "no-inline-comments": 0,
+      "max-nested-callbacks": 0
+    }
+  },
+  "babel": {
+    "presets": [
+      "es2015",
+      "stage-0"
+    ],
+    "plugins": [
+      [
+        "coverage",
+        {
+          "only": "src/*/"
+        }
+      ],
+      "transform-runtime"
+    ]
+  },
+  "apidoc": {
+    "name": "Bot Connector API Documentation",
+    "version": "0.0.0",
+    "title": "Bot Connector API Documentation",
+    "description": ""
+  },
+  "dependencies": {
+    "@slack/client": "^3.6.0",
+    "babel-plugin-transform-runtime": "^6.15.0",
+    "blueimp-md5": "^2.5.0",
+    "body-parser": "^1.15.2",
+    "chai-spies": "^0.7.1",
+    "cors": "^2.8.1",
+    "crypto": "^0.0.3",
+    "eslint": "^3.7.1",
+    "eslint-config-zavatta": "^4.2.0",
+    "express": "^4.14.0",
+    "filter-object": "^2.1.0",
+    "is_js": "^0.9.0",
+    "istanbul": "^0.4.5",
+    "lodash": "^4.16.4",
+    "mocha": "^3.1.2",
+    "mongoose": "^4.6.3",
+    "recursive-readdir": "^2.1.0",
+    "sinon": "^1.17.6",
+    "superagent": "^2.3.0",
+    "superagent-promise": "^1.1.0",
+    "tsscmp": "^1.0.5"
+  },
+  "devDependencies": {
+    "apidoc": "^0.16.1",
+    "babel-cli": "^6.16.0",
+    "babel-eslint": "^7.0.0",
+    "babel-plugin-coverage": "^1.0.0",
+    "babel-preset-es2015": "^6.16.0",
+    "babel-preset-stage-0": "^6.16.0",
+    "chai": "^3.5.0",
+    "chai-http": "^3.0.0",
+    "mocha": "^3.1.1",
+    "mock-require": "^1.3.0",
+    "nock": "^8.1.0",
+    "nodemon": "^1.11.0"
+  }
+}
