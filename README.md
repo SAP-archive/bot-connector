@@ -71,17 +71,17 @@ This pipeline allows us to have an abstraction of messages independent of the pl
 #### Receive a message
 
 Connector posts on your bot endpoint each time a new message arrives from a channel.
-1. a new message is received by Connector
-2. the message is parsed by the corresponding service
-3. the message is saved in MongoDB
-4. the message is post to the bot endpoint
+* a new message is received by Connector
+* the message is parsed by the corresponding service
+* the message is saved in MongoDB
+* the message is post to the bot endpoint
 
 #### Post a message
 
 To send a new message, you have to post it the to Connector's API
-1. the messages are saved in MongoDB
-2. the messages are formatted by the corresponding service to match the channel's format
-3. the messages are sent by Connector to the corresponding channel
+* the messages are saved in MongoDB
+* the messages are formatted by the corresponding service to match the channel's format
+* the messages are sent by Connector to the corresponding channel
 
 ## Messages format
 
