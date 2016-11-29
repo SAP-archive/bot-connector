@@ -1,8 +1,8 @@
-# Recast.AI Connector
+# Bot Connector
 
-Connector allows you to connect your bot to multiple messaging channels.
+Bot Connector allows you to connect your bot to multiple messaging channels.
 
-It provides a higher level API to manage several messaging platforms at once, and lets you focus on our bot by using a simple and unique format to talk to the entire world.
+It provides a higher level API to manage several messaging platforms at once, and lets you focus on your bot by using a simple and unique format to talk to the entire world.
 
 ## Documentation
 
@@ -13,7 +13,7 @@ yarn doc && open doc/index.html
 
 ## Supported Channels
 
-Connector supports the following channels:
+Bot Connector supports the following channels:
 * [Kik](https://github.com/RecastAI/bot-connector/wiki/Channel---Kik)
 * [Slack](https://github.com/RecastAI/bot-connector/wiki/Channel---Slack)
 * [Messenger](https://github.com/RecastAI/bot-connector/wiki/Channel---Messenger)
@@ -46,7 +46,7 @@ yarn start-dev
 
 #### Setup your bot
 
-First you need to create a bot with Connector's API:
+First you need to create a bot with Bot Connector's API:
 ```sh
 curl -X POST 'http://localhost:8080/bots' --data 'url=YOUR_BOT_ENDPOINT_URL'
 ```
@@ -58,7 +58,7 @@ yarn install
 yarn start
 ```
 
-Now that your bot and Connector are running, you have to create channels to let your bot talk on whatever messaging platform you want. Refer to channels' wiki pages for channel-specific examples.
+Now that your bot and Bot Connector are running, you have to create channels to let your bot talk on whatever messaging platform you want. Refer to channels' wiki pages for channel-specific examples.
 
 ## How it works
 
@@ -70,23 +70,23 @@ This pipeline allows us to have an abstraction of messages independent of the pl
 
 #### Receive a message
 
-Connector posts on your bot endpoint each time a new message arrives from a channel.
-* a new message is received by Connector
+Bot Connector posts on your bot endpoint each time a new message arrives from a channel.
+* a new message is received by Bot Connector
 * the message is parsed by the corresponding service
 * the message is saved in MongoDB
 * the message is post to the bot endpoint
 
 #### Post a message
 
-To send a new message, you have to post it the to Connector's API
+To send a new message, you have to post it the to Bot Connector's API
 * the messages are saved in MongoDB
 * the messages are formatted by the corresponding service to match the channel's format
-* the messages are sent by Connector to the corresponding channel
+* the messages are sent by Bot Connector to the corresponding channel
 
 ## Messages format
 
 All messages coming from the bot are parsed and modified to match the destination channel specifications.
-Connector supports several message formats:
+Bot Connector supports several message formats:
 
 * Text message:
 
