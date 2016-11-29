@@ -1,3 +1,5 @@
+![Bot Conector Logo](https://cdn.recast.ai/bot-connector/bot-connector.png)
+
 # Bot Connector
 
 Bot Connector allows you to connect your bot to multiple messaging channels.
