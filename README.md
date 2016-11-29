@@ -78,12 +78,16 @@ Bot Connector posts on your bot endpoint each time a new message arrives from a 
 * the message is saved in MongoDB
 * the message is post to the bot endpoint
 
+![Bot Conector flow receive](https://cdn.recast.ai/bot-connector/flow-1.png)
+
 #### Post a message
 
 To send a new message, you have to post it the to Bot Connector's API
 * the messages are saved in MongoDB
 * the messages are formatted by the corresponding service to match the channel's format
 * the messages are sent by Bot Connector to the corresponding channel
+
+![Bot Conector flow receive](https://cdn.recast.ai/bot-connector/flow-2.png)
 
 ## Messages format
 
