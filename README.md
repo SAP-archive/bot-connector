@@ -1,4 +1,4 @@
-![Bot Conector Logo](https://cdn.recast.ai/bot-connector/bot-connector.png)
+![Bot Conector Logo](https://cdn.recast.ai/bot-connector/bot-connector-logo.png)
 
 # Bot Connector
 
