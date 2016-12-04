@@ -9,6 +9,7 @@
     "start-dev": "NODE_ENV=development nodemon src/index.js --exec babel-node",
     "test": "NODE_ENV=test babel-node src/test.js",
     "build": "babel src --out-dir dist",
+    "deploy": "./deploy.sh",
     "doc": "apidoc -i src/ -o doc/"
   },
   "repository": {
