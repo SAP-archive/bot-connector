@@ -97,15 +97,15 @@ Bot Connector supports several message formats:
 * Text message:
 
 ```javascript
-{
+[{
   type: 'text',
   content: 'My text message',
-}
+}]
 ```
 * Quick Replies:
 
 ```javascript
-{
+[{
   type: 'quickReplies',
   content: {
     title: 'My title',
@@ -116,13 +116,13 @@ Bot Connector supports several message formats:
       },
     ]
   }
-}
+}]
 ```
 
 * Cards:
 
 ```javascript
-{
+[{
   type: 'card',
   content: {
     title: 'My card title',
@@ -135,24 +135,24 @@ Bot Connector supports several message formats:
       }
     ],
   },
-}
+}]
 ```
 
 * Pictures:
 
 ```javascript
-{
+[{
   type: 'picture',
   content: 'url_to_my_image',
-}
+}]
 ```
 * Videos:
 
 ```javascript
-{
+[{
   type: 'video',
   content: 'url_to_my_video',
-}
+}]
 ```
 
 ### Issue
