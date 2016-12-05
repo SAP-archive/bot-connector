@@ -224,7 +224,7 @@ export default class MessagesController {
 
   static async postToConversation (conversation, messages) {
     for (let participant of conversation.participants) {
-      participant = await Participant.findOne({_id: participant})
+      participant = await Participant.findOne({ _id: participant })
       const opts = {
         chatId: conversation.chatId,
         senderId: participant.senderId,
