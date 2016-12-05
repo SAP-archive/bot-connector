@@ -222,13 +222,20 @@ export default class MessagesController {
       })
   }
 
-  static postToConversation (conversation, messages) {
-    return new Promise((resolve, reject) => {
-      MessagesController.bulkSaveMessages([conversation, messages, {}])
-      .then(MessagesController.bulkFormatMessages)
-      .then(MessagesController.bulkSendMessages)
-      .catch(reject)
-    })
+  static async postToConversation (conversation, messages) {
+    for (let participant of conversation.participants) {
+      participant = await Participant.findOne({_id: participant})
+      const opts = {
+        chatId: conversation.chatId,
+        senderId: participant.senderId,
+      }
+      await new Promise((resolve, reject) => {
+        MessagesController.bulkSaveMessages([conversation, messages, opts])
+        .then(MessagesController.bulkFormatMessages)
+        .then(MessagesController.bulkSendMessages)
+        .catch(reject)
+      })
+    }
   }
 
   /**

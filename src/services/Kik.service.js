@@ -148,10 +148,10 @@ export default class KikService extends ServiceTemplate {
   * send the message to kik
   */
   static async sendMessage (conversation, messages) {
-    for (const message of messages) {
-      await agent('POST', 'https://api.kik.com/v1/message')
-        .auth(conversation.channel.userName, conversation.channel.apiKey)
-        .send({ messages: [message] })
-    }
+      for (const message of messages) {
+        await agent('POST', 'https://api.kik.com/v1/message')
+          .auth(conversation.channel.userName, conversation.channel.apiKey)
+          .send({ messages: [message] })
+      }
   }
 }
