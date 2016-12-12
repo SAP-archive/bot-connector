@@ -8,7 +8,9 @@ It provides a higher level API to manage several messaging platforms at once, an
 
 ## Documentation
 
-You can generate the documentation with the following command:
+You can see the API documentation [here](https://recastai.github.io/bot-connector/) 
+
+Or generate the documentation with the following command:
 ```bash
 yarn doc && open doc/index.html
 ```
