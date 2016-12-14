@@ -37,7 +37,7 @@ In order to run the connector you need MongoDB installed and running. The config
 Clone the repository and install the dependencies
 
 ```sh
-git clone https://github.com/RecastAI/connector.git
+git clone https://github.com/RecastAI/bot-connector.git
 cd connector
 yarn install
 ```
