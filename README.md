@@ -40,6 +40,7 @@ More will be added, and you can [contribute](https://github.com/RecastAI/bot-con
 * Wechat
 * Zinc.it 👍
 
+You can find the current roadmap [here](https://github.com/RecastAI/bot-connector/projects/1).
 
 ## Getting started
 
