@@ -22,9 +22,24 @@ Bot Connector supports the following channels:
 * [Slack](https://github.com/RecastAI/bot-connector/wiki/Channel---Slack)
 * [Messenger](https://github.com/RecastAI/bot-connector/wiki/Channel---Messenger)
 
-More will be added, and you can [contribute](https://github.com/RecastAI/bot-connector/blob/master/CONTRIBUTING.md) if you want to.
-
 You can find more information on each channel in the [wiki](https://github.com/RecastAI/bot-connector/wiki)
+
+More will be added, and you can [contribute](https://github.com/RecastAI/bot-connector/blob/master/CONTRIBUTING.md) if you want to, and add a thumbs up for the channel you want to see implemented first ;)
+(To do so, fork this repo, add a thumbs up and make a PR!)
+
+* Callr 👍👍
+* Cisco Spark 👍👍
+* Discord 👍
+* Line
+* Microsoft Teams 👍
+* Ryver 👍
+* Skype
+* Telegram 👍
+* Twillio
+* Viber
+* Wechat
+* Zinc.it 👍
+
 
 ## Getting started
 
