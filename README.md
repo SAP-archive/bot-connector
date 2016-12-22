@@ -8,7 +8,7 @@ It provides a higher level API to manage several messaging platforms at once, an
 
 ## Documentation
 
-You can see the API documentation [here](https://recastai.github.io/bot-connector/) 
+You can see the API documentation [here](https://recastai.github.io/bot-connector/)
 
 Or generate the documentation with the following command:
 ```bash
@@ -54,7 +54,7 @@ Clone the repository and install the dependencies
 
 ```sh
 git clone https://github.com/RecastAI/bot-connector.git
-cd connector
+cd bot-connector
 yarn install
 ```
 
