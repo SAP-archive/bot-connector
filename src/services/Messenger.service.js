@@ -87,7 +87,6 @@ export default class MessengerService extends ServiceTemplate {
     let msg
 
     if (message.attachment.type !== 'text' && message.attachment.type !== 'quickReplies') {
-      const buttons = []
       msg = {
         recipient: { id: opts.senderId },
         message: {
@@ -123,7 +122,36 @@ export default class MessengerService extends ServiceTemplate {
           buttons,
         })
         msg.message.attachment.payload.elements = elements
-      }
+      } else if (message.attachment.type === 'carousel') {
+				const elements = [];
+				const buttons = [];
+				let len = 0;
+
+				msg.message.attachment.type = 'template';
+				msg.message.attachment.payload.template_type = 'generic';
+				
+				message.attachment.content.forEach(e => {
+					e.buttons.forEach(btn => {
+						if (btn.type === 'web_url' || btn.type === 'account_link') {
+							buttons.push({type: btn.type, title: btn.title, url: btn.value})
+						} else if (btn.type === 'postback' || btn.type === 'phone_number' || btn.type === 'element_share') {
+							buttons.push({type: btn.type, title: btn.title, payload: btn.value})
+						}
+					});
+
+					elements.push({
+						title: e.title,
+						item_url: e.itemUrl,
+						image_url: e.imageUrl,
+						subtitle: e.subtitle,
+						buttons: [buttons[len]]
+					});
+
+					len++;
+				});
+
+				msg.message.attachment.payload.elements = elements
+			}
 
     } else if (message.attachment.type === 'quickReplies') {
       msg = {
