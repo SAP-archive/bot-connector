@@ -1,6 +1,6 @@
 import _ from 'lodash'
 
-export const messageTypes = ['text', 'picture', 'video', 'quickReplies', 'card']
+export const messageTypes = ['text', 'picture', 'video', 'quickReplies', 'card', 'carousel']
 
 export function isValidFormatMessage (message) {
   if (!_.isObject(message)
@@ -14,6 +14,7 @@ export function isValidFormatMessage (message) {
   if (message.type === 'video' && !_.isString(message.content)) { return false }
   if (message.type === 'quickReplies' && !_.isObject(message.content)) { return false }
   if (message.type === 'card' && !_.isObject(message.content)) { return false }
+  if (message.type === 'carousel' && !_.isObject(message.content)) { return false }
 
   return true
 }
