@@ -34,7 +34,7 @@ More will be added, and you can [contribute](https://github.com/RecastAI/bot-con
 * Microsoft Teams 👍
 * Ryver 👍
 * Skype 👍
-* Telegram 👍
+* Telegram 👍👍
 * Twillio
 * Viber
 * Wechat 👍
