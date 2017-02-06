@@ -13,8 +13,8 @@ import {
  *   */
 export class BadRequestError {
   constructor (message = null, results = null) {
-      this.content = { message, results }
-    }
+    this.content = { message, results }
+  }
 }
 
 /**
@@ -22,8 +22,8 @@ export class BadRequestError {
  *   */
 export class NotFoundError {
   constructor (target = 'Model', results = null) {
-      this.content = { results, message: `${target} not found` }
-    }
+    this.content = { results, message: `${target} not found` }
+  }
 }
 
 /*
@@ -31,8 +31,8 @@ export class NotFoundError {
  *   */
 export class ConflictError {
   constructor (message, results = null) {
-      this.content = { results, message }
-    }
+    this.content = { results, message }
+  }
 }
 
 /*
@@ -40,8 +40,8 @@ export class ConflictError {
  *   */
 export class ServiceError {
   constructor (message, results = null) {
-      this.content = { message, results }
-    }
+    this.content = { message, results }
+  }
 }
 
 /**
@@ -49,8 +49,8 @@ export class ServiceError {
  *   */
 export class StopPipeline {
   constructor (content) {
-      this.content = content
-    }
+    this.content = content
+  }
 }
 
 /**
@@ -60,8 +60,8 @@ export const renderConnectorError = (res, err) => {
   if (res.headersSent) { return }
 
   if (err instanceof StopPipeline) {
-      return renderStopPipeline(res, err.content)
-    }
+    return renderStopPipeline(res, err.content)
+  }
 
   if (err instanceof NotFoundError) {
     return renderNotFound(res, err.content)

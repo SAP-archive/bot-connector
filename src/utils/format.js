@@ -6,8 +6,8 @@ export function isValidFormatMessage (message) {
   if (!_.isObject(message)
       || !message.type || !message.content
       || messageTypes.indexOf(message.type) === -1) {
-      return false
-    }
+    return false
+  }
 
   if (message.type === 'text' && !_.isString(message.content)) { return false }
   if (message.type === 'picture' && !_.isString(message.content)) { return false }

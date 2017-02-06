@@ -1,13 +1,26 @@
 import mongoose from 'mongoose'
+import uuidV4 from 'uuidV4'
 
 const BotSchema = new mongoose.Schema({
+  _id: { type: String, default: uuidV4 },
   url: { type: String, required: true },
-  channels: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Channel' }],
-  conversations: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Conversation' }],
+  channels: [{ type: String, ref: 'Channel' }],
+  conversations: [{ type: String, ref: 'Conversation' }],
 }, {
   usePushEach: true,
   timestamps: true,
 })
+
+async function generateUUID (next) {
+  if (this.isNew) {
+    while (await models.Bot.findOne({ _id: this._id })) {
+      this._id = uuidV4()
+    }
+  }
+  next()
+}
+
+BotSchema.pre('save', generateUUID)
 
 BotSchema.virtual('serialize').get(function () {
   return {
