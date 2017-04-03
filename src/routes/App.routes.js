@@ -1,16 +1,13 @@
-import AppController from '../controllers/App.controller.js'
-
 export default [
   {
     method: 'GET',
     path: '/',
-    validators: [],
-    handler: AppController.index,
+    handler: controllers.App.index,
   },
+
   {
     method: 'POST',
     path: '/',
-    validators: [],
-    handler: AppController.index,
+    handler: controllers.App.index,
   },
 ]
