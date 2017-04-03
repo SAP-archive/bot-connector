@@ -11,8 +11,6 @@ export async function createChannelByConnectorId (req) {
 
   if (!type) {
     throw new BadRequestError('Parameter type is missing')
-  } else if (!isActivated) {
-    throw new BadRequestError('Parameter isActivated is missing')
   } else if (!slug) {
     throw new BadRequestError('Parameter slug is missing')
   } else if (!services[type]) {

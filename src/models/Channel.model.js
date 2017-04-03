@@ -10,7 +10,7 @@ const ChannelSchema = new mongoose.Schema({
   slug: { type: String, required: true },
   type: { type: String, required: true },
   isErrored: { type: Boolean, required: true, default: false },
-  isActivated: { type: Boolean, required: true },
+  isActivated: { type: Boolean, required: true, default: true },
 
   token: String,
   clientId: String,
