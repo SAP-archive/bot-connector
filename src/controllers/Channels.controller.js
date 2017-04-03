@@ -27,7 +27,7 @@ export default class ChannelsController {
     const params = filter(req.body, permitted)
     const { slug } = req.body
 
-    const connector = await models.findById(connector_id).populate('channels')
+    const connector = await models.Connector.findById(connector_id).populate('channels')
 
     if (!connector) { throw new NotFoundError('Connector') }
 
