@@ -1,55 +1,89 @@
+import moment from 'moment'
 
-import { notFoundError, handleMongooseError } from '../utils/errors'
+import { Logger } from '../utils'
+import { renderOk, renderDeleted } from '../utils/responses'
+import { NotFoundError, BadRequestError } from '../utils/errors'
 
 export default class ConversationController {
 
   /*
-  * Index all bot's conversations
+  * Index all connector conversations
   */
-  static getConversationsByBotId (req, res) {
-    Bot.findOne({ _id: req.params.bot_id })
-      .populate('conversations')
-      .exec()
-      .then(foundBot => {
-        if (!foundBot) { return Promise.reject(new notFoundError('Bot')) }
-        if (!foundBot.conversations || !foundBot.conversations.length) { return res.json({ results: [], message: 'No conversations' }) }
+  static async getConversationsByConnectorId (req, res) {
+    const { connector_id  } = req.params
 
-        res.json({ results: foundBot.conversations.filter(conversation => conversation.isActive).map(conversation => conversation.serialize), message: 'Conversations successfully rendered' })
-      })
-      .catch(err => handleMongooseError(err, res, 'Error while getting Conversations'))
+    const conversations = models.Conversations.find({ connector: connector_id })
+
+    renderOk(res, {
+      results: conversations.map(c => c.serialize),
+      message: conversations.length ? 'Conversations rendered with success' : 'No conversations',
+    })
   }
 
   /*
   * Show a conversation
   */
-  static getConversationByBotId (req, res) {
-    Conversation.findOne({ _id: req.params.conversation_id })
-      .populate('participants messages')
-      .exec()
-      .then(foundConversation => {
-        if (!foundConversation || !foundConversation.isActive) { return Promise.reject(new notFoundError('Conversation')) }
+  static async getConversationByConnectorId (req, res) {
+    const { connector_id, conversation_id } = req.params
 
-        foundConversation.participants = foundConversation.participants.map(participant => participant.serialize)
-        foundConversation.messages = foundConversation.messages.map(message => message.serialize)
-        res.json({ results: foundConversation.full, message: 'Conversation successfully rendered' })
-      })
-      .catch(err => handleMongooseError(err, res, 'Error while getting Conversations'))
+    const conversation = await models.Conversation.findOne({ _id: conversation_id, connector: connector_id}).populate('participants messages')
+
+    if (!conversation) { throw new NotFoundError('Conversation') }
+
+    return renderOk(res, {
+      results: conversation.full,
+      message: 'Conversation rendered with success',
+    })
   }
 
   /*
-  * Soft-delete a conversation (isActive = false)
+  * Delete a conversation
   */
-  static deleteConversationByBotId (req, res) {
-    Conversation.findOne({ _id: req.params.conversation_id })
-      .then(foundConversation => {
+  static async deleteConversationByConnectorId (req, res) {
+    const { connector_id, conversation_id } = req.params
 
-        if (!foundConversation || !foundConversation.isActive) { return Promise.reject(new notFoundError('Conversation')) }
+    const conversation = await models.Conversation.findOne({ _id: conversation_id, connector: connector_id })
 
-        foundConversation.isActive = false
+    if (!conversation) { throw new NotFoundError('Conversation') }
 
-        return foundConversation.save()
-      })
-      .then(() => res.status(204).send())
-      .catch(err => handleMongooseError(err, res, 'Error while getting Conversations'))
+    await conversation.remove()
+
+    renderDeleted(res, 'Conversation deleted with success')
   }
+
+  /*
+   * Find or create a conversation
+   */
+  static async findOrCreateConversation (channelId, chatId) {
+    let conversation = await models.Conversation.findOne({ channel: channelId, chatId })
+      .populate('channel')
+      .populate('connector', 'url _id')
+      .populate('participants')
+      .exec()
+
+    if (conversation) { return conversation }
+
+    const channel = await models.Channel.findById(channelId).populate('connector').exec()
+
+    if (!channel) {
+      throw new NotFoundError('Channel')
+    } else if (!channel.isActivated) {
+      throw new BadRequestError('Channel is not activated')
+    }
+
+    const { connector } = channel
+
+    if (!connector) {
+      throw new NotFoundError('Connector')
+    }
+
+    conversation = await new models.Conversation({ connector: connector._id, chatId, channel: channel._id }).save()
+    connector.conversations.push(conversation._id)
+    await models.Connector.update({ _id: connector._id }, { $push: { conversations: conversation._id } })
+
+    conversation.connector = connector
+    conversation.channel = channel
+    return conversation
+  }
+
 }
