@@ -1,27 +1,65 @@
 import request from 'superagent'
 
+import { Logger } from '../utils'
 import ServiceTemplate from './Template.service'
+import { BadRequestError, ForbiddenError } from '../utils/errors'
 
 const agent = require('superagent-promise')(require('superagent'), Promise)
 
-export default class KikService extends ServiceTemplate {
+/**
+ * Connector's Kik Service
+ */
+class ConnectorKikService extends ServiceTemplate {
+
+  /*
+   * Subscribe webhook
+   */
+  static async onChannelCreate (channel) {
+    const data = {
+      webhook: channel.webhook,
+      features: {
+        receiveReadReceipts: false,
+        receiveIsTyping: false,
+        manuallySendReadReceipts: false,
+        receiveDeliveryReceipts: false,
+      },
+    }
+
+    try {
+      await new Promise((resolve, reject) => {
+        request.post('https://api.kik.com/v1/config')
+          .auth(channel.userName, channel.apiKey)
+          .send(data)
+          .end((err) => err ? reject(err) : resolve())
+      })
+      channel.isErrored = false
+    } catch (err) {
+      channel.isErrored = true
+    }
+  }
+
+  static async onChannelUpdate (channel) {
+    await ConnectorKikService.onChannelCreate(channel)
+  }
 
   /**
    * Check if the message come from a valid webhook
    */
-  static checkSecurity (req, channel) {
-    return ('https://'.concat(req.headers.host) === channel.webhook && req.headers['x-kik-username'] === channel.userName)
+  static checkSecurity (req, res, channel) {
+    if (`${config.base_urlt}//webhook/${channel._id}` !== channel.webhook || req.headers['x-kik-username'] !== channel.userName) {
+      throw new ForbiddenError()
+    }
+    res.status(200).send()
   }
 
   /**
    * Check if any params is missing
    */
   static checkParamsValidity (channel) {
-    const { userName, apiKey, webhook } = channel
+    const { userName, apiKey } = channel
 
-    if (!apiKey) { throw new ValidationError('apiKey', 'missing') }
-    if (!webhook) { throw new ValidationError('webhook', 'missing') }
-    if (!userName) { throw new ValidationError('userName', 'missing') }
+    if (!apiKey) { throw new BadRequestError('Parameter apiKey is missing') }
+    if (!userName) { throw new BadRequestError('Parameter userName is missing') }
 
     return true
   }
@@ -31,6 +69,7 @@ export default class KikService extends ServiceTemplate {
    */
   static extractOptions (req) {
     const { body } = req
+
     return {
       chatId: body.messages[0].chatId,
       senderId: body.messages[0].participants[0],
@@ -40,15 +79,14 @@ export default class KikService extends ServiceTemplate {
   /**
    * send 200 to kik to stop pipeline
    */
-  static async beforePipeline (res) {
-    return res.status(200).send()
+  static async beforePipeline (req, res, channel) {
+    return channel
   }
 
   /**
    * Parse the message to the connector format
    */
   static parseChannelMessage (conversation, message, opts) {
-
     const firtsMessage = message.messages[0]
     const msg = {
       attachment: {},
@@ -57,28 +95,26 @@ export default class KikService extends ServiceTemplate {
 
     switch (firtsMessage.type) {
     case 'text':
-      msg.attachment = { type: 'text', value: firtsMessage.body }
+      msg.attachment = { type: 'text', content: firtsMessage.body }
       break
     case 'link':
-      msg.attachment = { type: 'link', value: firtsMessage.url }
+      msg.attachment = { type: 'link', content: firtsMessage.url }
       break
     case 'picture':
-      msg.attachment = { type: 'picture', value: firtsMessage.picUrl }
+      msg.attachment = { type: 'picture', content: firtsMessage.picUrl }
       break
     case 'video':
-      msg.attachment = { type: 'video', value: firtsMessage.videoUrl }
+      msg.attachment = { type: 'video', content: firtsMessage.videoUrl }
       break
     default:
-      msg.attachment = { type: 'text', value: 'we don\'t handle this type' }
-      break
+      throw new BadRequestError('Format not supported')
     }
-    message = msg
-    return [conversation, message, opts]
+    return [conversation, msg, opts]
   }
 
-  /*
-  * Parse the message to send it to kik
-  */
+  /**
+   * Parse the message to the Connector format
+   */
   static formatMessage (conversation, message, opts) {
     const reply = []
     let keyboards = null
@@ -99,8 +135,10 @@ export default class KikService extends ServiceTemplate {
 
     } else if (message.attachment.type === 'card') {
       if (message.attachment.content.buttons && message.attachment.content.buttons.length) {
-        keyboards = [{ type: 'suggested' }]
-        keyboards[0].responses = message.attachment.content.buttons.map(button => ({ type: 'text', body: button.title }))
+        keyboards = [{ type: 'suggested', responses: [] }]
+        message.attachment.content.buttons.forEach(button => {
+          if (button.type !== 'element_share') { keyboards[0].responses.push({ type: 'text', body: button.value }) }
+        })
       }
       if (message.attachment.content.title) {
         reply.push({ type: 'text', chatId: opts.chatId, to: opts.senderId, body: message.attachment.content.title })
@@ -109,43 +147,28 @@ export default class KikService extends ServiceTemplate {
         reply.push({ type: 'picture', chatId: opts.chatId, to: opts.senderId, picUrl: message.attachment.content.imageUrl })
       }
       reply[reply.length - 1].keyboards = keyboards
-    } else {
-      reply.push({ type: 'text', chatId: opts.chatId, to: opts.senderId, body: 'wrong parameter' })
+    } else if (message.attachment.type === 'carouselle') {
+      if (message.attachment.content && message.attachment.content.length) {
+        keyboards = [{ type: 'suggested' }]
+        keyboards[0].responses = message.attachment.content.map(c => ({ type: 'text', body: c.buttons[0].value }))
+      }
+      message.attachment.content.forEach(c => {
+
+        if (c.title) {
+          reply.push({ type: 'text', chatId: opts.chatId, to: opts.senderId, body: c.buttons[0].title })
+        }
+        if (c.imageUrl) {
+          reply.push({ type: 'picture', chatId: opts.chatId, to: opts.senderId, picUrl: c.imageUrl })
+        }
+      })
+      reply[reply.length - 1].keyboards = keyboards
     }
 
     return reply
   }
 
-  /*
-  * Suscribe webhook
-  */
-  static onChannelCreate (channel) {
-    const data = {
-      webhook: `${channel.webhook}/webhook/${channel._id}`,
-      features: {
-        receiveReadReceipts: false,
-        receiveIsTyping: false,
-        manuallySendReadReceipts: false,
-        receiveDeliveryReceipts: false,
-      },
-    }
-
-    return new Promise((resolve, reject) => {
-      request.post('https://api.kik.com/v1/config')
-        .auth(channel.userName, channel.apiKey)
-        .send(data)
-        .end(err => {
-          if (!err) { return resolve() }
-          return reject({
-            error: 'Error while subscribing bot to Kik server',
-            status: 502,
-          })
-        })
-    })
-  }
-
  /**
-  * send the message to kik
+  * Send the message to kik
   */
   static async sendMessage (conversation, messages) {
     for (const message of messages) {
