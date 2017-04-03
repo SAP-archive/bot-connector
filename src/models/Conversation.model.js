@@ -1,36 +1,46 @@
 import mongoose from 'mongoose'
+import uuidV4 from 'uuid/v4'
 
 const ConversationSchema = new mongoose.Schema({
-  channel: { type: mongoose.Schema.Types.ObjectId, ref: 'Channel', required: true },
-  bot: { type: mongoose.Schema.Types.ObjectId, ref: 'Bot', required: true },
+  _id: { type: String, default: uuidV4 },
+  channel: { type: String, ref: 'Channel', required: true },
+  connector: { type: String, ref: 'Connector', required: true },
   chatId: { type: String, required: true },
-  isActive: { type: Boolean, default: true },
-  participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Participant' }],
-  messages: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Message' }],
+  participants: [{ type: String, ref: 'Participant' }],
+  messages: [{ type: String, ref: 'Message' }],
 }, {
   usePushEach: true,
   timestamps: true,
 })
 
+async function generateUUID (next) {
+  if (this.isNew) {
+    while (await models.Conversation.findOne({ _id: this._id })) {
+      this._id = uuidV4()
+    }
+  }
+  next()
+}
+
+ConversationSchema.pre('save', generateUUID)
+
 ConversationSchema.virtual('serialize').get(function () {
   return {
     id: this._id,
     channel: this.channel,
-    bot: this.bot,
+    connector: this.connector,
     chatId: this.chatId,
-    isActive: this.isActive,
   }
 })
 
 ConversationSchema.virtual('full').get(function () {
   return {
     id: this._id,
-    bot: this.bot,
+    connector: this.connector,
     chatId: this.chatId,
     channel: this.channel,
-    participants: this.participants,
-    messages: this.messages,
-    isActive: this.isActive,
+    participants: this.participants.map(p => p.serialize),
+    messages: this.messages.filter(m => m.isActive).map(m => m.serialize),
   }
 })
 
