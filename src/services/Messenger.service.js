@@ -1,6 +1,4 @@
-import request from 'superagent'
-
-import { Logger, getWebhookToken } from '../utils'
+import { getWebhookToken } from '../utils'
 import { StopPipeline, BadRequestError } from '../utils/errors'
 import ServiceTemplate from './Template.service'
 

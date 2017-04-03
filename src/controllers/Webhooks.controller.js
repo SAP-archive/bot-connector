@@ -1,8 +1,7 @@
 import request from 'superagent'
 
 import { invoke, invokeSync } from '../utils'
-import { renderOk, renderCreated } from '../utils/responses'
-import { NotFoundError, ForbiddenError, BadRequestError } from '../utils/errors'
+import { NotFoundError, BadRequestError } from '../utils/errors'
 
 export default class WebhooksController {
   /**

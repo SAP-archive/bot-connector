@@ -1,6 +1,3 @@
-import moment from 'moment'
-
-import { Logger } from '../utils'
 import { renderOk, renderDeleted } from '../utils/responses'
 import { NotFoundError, BadRequestError } from '../utils/errors'
 
@@ -10,7 +7,7 @@ export default class ConversationController {
   * Index all connector conversations
   */
   static async getConversationsByConnectorId (req, res) {
-    const { connector_id  } = req.params
+    const { connector_id } = req.params
 
     const conversations = models.Conversations.find({ connector: connector_id })
 
@@ -26,7 +23,7 @@ export default class ConversationController {
   static async getConversationByConnectorId (req, res) {
     const { connector_id, conversation_id } = req.params
 
-    const conversation = await models.Conversation.findOne({ _id: conversation_id, connector: connector_id}).populate('participants messages')
+    const conversation = await models.Conversation.findOne({ _id: conversation_id, connector: connector_id }).populate('participants messages')
 
     if (!conversation) { throw new NotFoundError('Conversation') }
 

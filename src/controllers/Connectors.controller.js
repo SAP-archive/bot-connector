@@ -2,7 +2,6 @@ import filter from 'filter-object'
 
 import {
   NotFoundError,
-  BadRequestError,
 } from '../utils/errors'
 
 import {
@@ -33,7 +32,7 @@ export default class ConnectorsController {
   /**
   * Show a connector
   */
-  static getConnectorByBotId (req, res) {
+  static async getConnectorByBotId (req, res) {
     const { connector_id } = req.params
 
     const connector = await models.Connector.findById(connector_id)
@@ -52,7 +51,7 @@ export default class ConnectorsController {
   static async updateConnectorByBotId (req, res) {
     const { connector_id } = req.params
 
-    const connector = await models.Connector.findOneAndUpdate({ _id: currentBot.connector._id },
+    const connector = await models.Connector.findOneAndUpdate({ _id: connector_id },
       { $set: filter(req.body, permittedUpdate) }, { new: true }
     ).populate('channels')
 
@@ -67,7 +66,6 @@ export default class ConnectorsController {
   */
   static async deleteConnectorByBotId (req, res) {
     const { connector_id } = req.params
-    const { currentBot } = req.user
 
     const connector = await models.Connector.findById(connector_id)
           .populate('channels conversations')

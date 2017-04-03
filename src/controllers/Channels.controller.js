@@ -2,7 +2,6 @@ import filter from 'filter-object'
 
 import {
   invoke,
-  getWebhookToken,
 } from '../utils'
 
 import {
@@ -114,7 +113,7 @@ export default class ChannelsController {
   static async deleteChannelByConnectorId (req, res) {
     const { connector_id, channel_slug } = req.params
 
-    const channel = await models.Channel.findOne({ connector: connector_id, slug: channel_slug})
+    const channel = await models.Channel.findOne({ connector: connector_id, slug: channel_slug })
     await Promise.all([
       channel.remove(),
       invoke(channel.type, 'onChannelDelete', [channel]),

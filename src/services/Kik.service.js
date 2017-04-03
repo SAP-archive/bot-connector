@@ -1,6 +1,5 @@
 import request from 'superagent'
 
-import { Logger } from '../utils'
 import ServiceTemplate from './Template.service'
 import { BadRequestError, ForbiddenError } from '../utils/errors'
 

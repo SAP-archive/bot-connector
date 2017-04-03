@@ -25,7 +25,6 @@ class MessagesController {
   /* Save a message in db and create the participant if necessary */
   static async saveMessage ([conversation, message, options]) {
     let participant = _.find(conversation.participants, p => p.senderId === options.senderId)
-    const { type } = conversation.channel
 
     if (!participant) {
       participant = await new models.Participant({ senderId: options.senderId }).save()

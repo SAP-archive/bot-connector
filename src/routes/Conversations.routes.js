@@ -54,3 +54,4 @@ export default [
     validators: [],
     handler: controllers.Conversations.getConversationByConnectorId,
   },
+]

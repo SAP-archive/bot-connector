@@ -42,4 +42,6 @@ export const createRouter = app => {
     })
   })
 
+  app.use(router)
+
 }
