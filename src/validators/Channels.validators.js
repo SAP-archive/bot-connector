@@ -1,73 +1,23 @@
-import mongoose from 'mongoose'
 import filter from 'filter-object'
 
 import { invoke } from '../utils'
-import { handleMongooseError, ValidationError } from '../utils/errors'
+import { BadRequestError } from '../utils/errors'
 
-const permitted = '{type,slug,isActivated,token,userName,apiKey,webhook}'
+const permitted = '{type,slug,isActivated,token,userName,apiKey,webhook,clientId,clientSecret,password,phoneNumber,serviceId}'
 
-export async function createChannelByBotId (req, res, next) {
+export async function createChannelByConnectorId (req) {
   const { isActivated, slug, type } = req.body
-  const { bot_id } = req.params
-  const newChannel = new Channel(filter(req.body, permitted))
+  const newChannel = new models.Channel(filter(req.body, permitted))
 
-  if (!mongoose.Types.ObjectId.isValid(bot_id)) {
-    return handleMongooseError(new ValidationError('bot_id', 'invalid'), res)
-  } else if (!type) {
-    return handleMongooseError(new ValidationError('type', 'missing'), res)
+  if (!type) {
+    throw new BadRequestError('Parameter type is missing')
   } else if (!isActivated) {
-    return handleMongooseError(new ValidationError('isActivated', 'missing'), res)
+    throw new BadRequestError('Parameter isActivated is missing')
   } else if (!slug) {
-    return handleMongooseError(new ValidationError('slug', 'missing'), res)
+    throw new BadRequestError('Parameter slug is missing')
   } else if (!services[type]) {
-    return handleMongooseError(new ValidationError('type', 'invalid'), res)
+    throw new BadRequestError('Parameter type is invalid')
   }
 
-  try {
-    await invoke(newChannel.type, 'checkParamsValidity', [newChannel])
-  } catch (err) {
-    return handleMongooseError(err, res, 'Error while creating channel')
-  }
-
-  return next()
-}
-
-export const getChannelsByBotId = (req, res, next) => {
-  const { bot_id } = req.params
-
-  if (!mongoose.Types.ObjectId.isValid(bot_id)) {
-    return handleMongooseError(new ValidationError('bot_id', 'invalid'), res)
-  }
-
-  return next()
-}
-
-export const getChannelByBotId = (req, res, next) => {
-  const { bot_id } = req.params
-
-  if (!mongoose.Types.ObjectId.isValid(bot_id)) {
-    return handleMongooseError(new ValidationError('bot_id', 'invalid'), res)
-  }
-
-  return next()
-}
-
-export const updateChannelByBotId = (req, res, next) => {
-  const { bot_id } = req.params
-
-  if (!mongoose.Types.ObjectId.isValid(bot_id)) {
-    return handleMongooseError(new ValidationError('bot_id', 'invalid'), res)
-  }
-
-  return next()
-}
-
-export const deleteChannelByBotId = (req, res, next) => {
-  const { bot_id } = req.params
-
-  if (!mongoose.Types.ObjectId.isValid(bot_id)) {
-    return handleMongooseError(new ValidationError('bot_id', 'invalid'), res)
-  }
-
-  return next()
+  await invoke(newChannel.type, 'checkParamsValidity', [newChannel])
 }
