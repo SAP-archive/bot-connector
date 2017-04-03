@@ -37,7 +37,7 @@ export const createRouter = app => {
         await r.handler(req, res)
       } catch (err) {
         Logger.error(err)
-        renderConnectorError(err)
+        renderConnectorError(res, err)
       }
     })
   })
