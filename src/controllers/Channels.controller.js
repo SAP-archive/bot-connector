@@ -92,6 +92,10 @@ export default class ChannelsController {
   static async updateChannelByConnectorId (req, res) {
     const { connector_id, channel_slug } = req.params
 
+    const oldChannel = await models.Channel.findOne({ slug: channel_slug, connector: connector_id })
+
+    if (!oldChannel) { throw new NotFoundError('Channel') }
+
     const channel = await models.Channel.findOneAndUpdate(
       { slug: channel_slug, connector: connector_id },
       { $set: filter(req.body, permitted) },

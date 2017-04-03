@@ -147,7 +147,7 @@ export default [
   */
   {
     method: 'PUT',
-    path: '/connectors/:connector_id/channels/:channels_slug',
+    path: '/connectors/:connector_id/channels/:channel_slug',
     validators: [],
     handler: controllers.Channels.updateChannelByConnectorId,
   },
