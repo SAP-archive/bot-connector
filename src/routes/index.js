@@ -1,19 +1,21 @@
 import express from 'express'
 import { Logger } from '../utils'
 
-import appRoutes from './App.routes.js'
-import connectorRoutes from './Connectors.routes.js'
-import channelRoutes from './Channels.routes.js'
-import messagesRoutes from './Messages.routes.js'
-import webhooksRoutes from './Webhooks.routes.js'
-import conversationRoutes from './Conversations.routes.js'
-import participantsRoutes from './Participants.routes.js'
+import appRoutes from './App.routes'
+import oauthRoutes from '/Oauth.routes'
+import connectorRoutes from './Connectors.routes'
+import channelRoutes from './Channels.routes'
+import messagesRoutes from './Messages.routes'
+import webhooksRoutes from './Webhooks.routes'
+import conversationRoutes from './Conversations.routes'
+import participantsRoutes from './Participants.routes'
 
 import { renderConnectorError } from '../utils/errors'
 
 export const routes = [
   ...appRoutes,
-  ...botRoutes,
+  ...oauthRoutes,
+  ...connectorRoutes,
   ...channelRoutes,
   ...messagesRoutes,
   ...webhooksRoutes,
