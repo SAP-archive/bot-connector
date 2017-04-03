@@ -4,7 +4,6 @@ import bodyParser from 'body-parser'
 import _ from 'lodash'
 
 import configs from '../config'
-import { createRouter } from './routes/'
 import { initServices, Logger } from './utils'
 
 const app = express()
@@ -71,3 +70,21 @@ db.once('open', () => {
     Logger.info(`App is running and listening to port ${config.server.port}`)
   })
 })
+
+/* eslint-disable no-console */
+mongoose.connect(`mongodb://${config.db.host}:${config.db.port}/${config.db.dbName}`)
+const db = mongoose.connection
+db.on('error', err => {
+  Logger.error('FAILED TO CONNECT', err)
+  process.exit(1)
+})
+
+// Launch the application
+db.once('open', () => {
+  createRouter(app)
+  initServices()
+  app.listen(config.server.port)
+  app.emit('ready')
+  Logger.info(`App is running and listening to port ${config.server.port}`)
+})
+/* eslint-enable no-console */
