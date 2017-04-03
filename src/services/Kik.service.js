@@ -38,14 +38,14 @@ export default class KikService extends ServiceTemplate {
   }
 
   static async onChannelUpdate (channel) {
-    await ConnectorKikService.onChannelCreate(channel)
+    await KikService.onChannelCreate(channel)
   }
 
   /**
    * Check if the message come from a valid webhook
    */
   static checkSecurity (req, res, channel) {
-    if (`${config.base_urlt}//webhook/${channel._id}` !== channel.webhook || req.headers['x-kik-username'] !== channel.userName) {
+    if (`${config.base_url}/webhook/${channel._id}` !== channel.webhook || req.headers['x-kik-username'] !== channel.userName) {
       throw new ForbiddenError()
     }
     res.status(200).send()

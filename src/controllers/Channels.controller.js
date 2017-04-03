@@ -118,6 +118,8 @@ export default class ChannelsController {
     const { connector_id, channel_slug } = req.params
 
     const channel = await models.Channel.findOne({ connector: connector_id, slug: channel_slug })
+    if (!channel) { throw new NotFoundError('Channel') }
+
     await Promise.all([
       channel.remove(),
       invoke(channel.type, 'onChannelDelete', [channel]),
