@@ -12,7 +12,6 @@ export default [
   * @apiSuccess {String} results.channel if of the Channel's Conversation
   * @apiSuccess {String} results.chatId id of the chat linked to the Conversation
   * @apiSuccess {String} results.connector ObjectId of the connector
-  * @apiSuccess {String} results.isActive Conversation is active or not
   * @apiSuccess {String} message success message
   *
   * @apiError (Not Found 404) {String} message Bot not found
@@ -38,7 +37,6 @@ export default [
   * @apiSuccess {String} results.channel Channel
   * @apiSuccess {String} results.connector Id of the connector
   * @apiSuccess {String} results.chatId id of the chat linked to the Conversation
-  * @apiSuccess {Boolean} results.isActive Conversation is active or not
   * @apiSuccess {Array} results.participants Array of Participants
   * @apiSuccess {Array} results.messages Array of Messages
   * @apiSuccess {String} message success message
