@@ -70,7 +70,7 @@ export default [
   */
   {
     method: 'GET',
-    path: '/connectors/:connector_id/channels'
+    path: '/connectors/:connector_id/channels',
     validators: [],
     handler: controllers.Channels.getChannelsByConnectorId,
   },
@@ -104,7 +104,7 @@ export default [
   */
   {
     method: 'GET',
-    path: '/connectors/:connector_id/channels/:channel_slug'
+    path: '/connectors/:connector_id/channels/:channel_slug',
     validators: [],
     handler: controllers.Channels.getChannelByConnectorId,
   },
@@ -147,7 +147,7 @@ export default [
   */
   {
     method: 'PUT',
-    path: '/connectors/:connector_id/channels/:channels_slug'
+    path: '/connectors/:connector_id/channels/:channels_slug',
     validators: [],
     handler: controllers.Channels.updateChannelByConnectorId,
   },
@@ -165,7 +165,7 @@ export default [
   */
   {
     method: 'DELETE',
-    path: '/connectors/:connector_id/channels/:channel_slug'
+    path: '/connectors/:connector_id/channels/:channel_slug',
     validators: [],
     handler: controllers.Channels.deleteChannelByConnectorId,
   },
