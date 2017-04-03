@@ -8,6 +8,8 @@ export {
 
 export {
   BadRequestError,
+  ForbiddenError,
+  UnauthorizedError,
   NotFoundError,
   ServiceError,
   renderConnectorError,
@@ -18,6 +20,8 @@ export {
   renderCreated,
   renderDeleted,
   renderBadRequest,
+  renderForbidden,
+  renderUnauthorized,
   renderNotFound,
   renderConflict,
   renderInternalServerError,
