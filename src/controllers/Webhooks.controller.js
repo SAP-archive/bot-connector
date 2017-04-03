@@ -1,37 +1,34 @@
 import request from 'superagent'
 
-import MessagesController from '../controllers/Messages.controller.js'
-import MessengerService from '../services/Messenger.service.js'
-
-import {
-  invoke,
-  invokeSync,
-} from '../utils'
-import Logger from '../utils/Logger'
-import { notFoundError, handleMongooseError } from '../utils/errors'
+import { invoke, invokeSync } from '../utils'
+import { renderOk, renderCreated } from '../utils/responses'
+import { NotFoundError, ForbiddenError, BadRequestError } from '../utils/errors'
 
 export default class WebhooksController {
-
   /**
-   * Call the Message pipeline
+   * Receive a new message from a channel
+   * Retrieve the proper channel
+   * Invoke beforePipeline, extractOptions and checkSecurity
+   * Call the pipeline
    */
   static async forwardMessage (req, res) {
-
     const { channel_id } = req.params
-    const channel = await Channel.findById(channel_id)
-    if (!channel) { throw new notFoundError('Channel') }
+    let channel = await models.Channel.findById(channel_id).populate({ path: 'children' })
 
-    const opts = invokeSync(channel.type, 'extractOptions', [req, channel])
-    if (!invokeSync(channel.type, 'checkSecurity', [req, channel])) { return res.status(400) }
-    await invoke(channel.type, 'beforePipeline', [res, channel])
+    if (!channel) {
+      throw new NotFoundError('Channel')
+    } else if (!channel.isActivated) {
+      throw new BadRequestError('Channel is not activated')
+    } else if (!channel.type) {
+      throw new BadRequestError('Type is not defined')
+    }
 
-    return MessagesController.pipeMessage(channel_id, req.body, opts)
-    .then((res) => {
-      Logger.info(res)
-    })
-    .catch((err) => {
-      Logger.error(err)
-    })
+    channel = await invoke(channel.type, 'beforePipeline', [req, res, channel])
+
+    const options = invokeSync(channel.type, 'extractOptions', [req, res, channel])
+    invokeSync(channel.type, 'checkSecurity', [req, res, channel])
+
+    await controllers.Messages.pipeMessage(channel._id, req.body, options)
   }
 
   /**
@@ -39,7 +36,7 @@ export default class WebhooksController {
    */
   static sendMessageToBot ([conversation, message, opts]) {
     return new Promise((resolve, reject) => {
-      request.post(conversation.bot.url)
+      request.post(conversation.connector.url)
         .set('Accept', 'application/json')
         .set('Content-Type', 'application/json')
         .send({ message, chatId: opts.chatId, senderId: opts.senderId })
@@ -63,18 +60,18 @@ export default class WebhooksController {
     return conversation
   }
 
-  static subscribeFacebookWebhook (req, res) {
-    Channel.findById(req.params.channel_id)
-      .then(channel => {
-        if (!channel) { return Promise.reject(new notFoundError('Channel')) }
+  // TODO Abstract it!
+  static async subscribeFacebookWebhook (req, res) {
+    const { channel_id } = req.params
 
-        if (MessengerService.connectWebhook(req, channel)) {
-          res.status(200).send(req.query['hub.challenge'])
-        } else {
-          Logger.warning('Error while connecting the webhook')
-          res.status(403).json({ results: null, message: 'Error while connecting the webhook' })
-        }
-      })
-      .catch(err => handleMongooseError(err, res, 'Error while connecting to Messenger'))
+    const channel = await models.Channel.findById(channel_id)
+    if (!channel) { throw new NotFoundError('Channel') }
+
+    if (services.messenger.connectWebhook(req, channel)) {
+      res.status(200).send(req.query['hub.challenge'])
+    } else {
+      res.status(403).json({ results: null, message: 'Error while connecting the webhook' })
+    }
   }
+
 }
