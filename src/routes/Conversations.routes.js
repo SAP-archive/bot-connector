@@ -54,4 +54,26 @@ export default [
     validators: [],
     handler: controllers.Conversations.getConversationByConnectorId,
   },
+
+  /**
+  * @api {delete} /conversations/:conversation_id Delete conversation
+  * @apiName deleteConversationByConnectorId
+  * @apiGroup Conversation
+  *
+  * @apiDescription Delete a Connector's Conversation
+  *
+  * @apiParam {String} conversation_id Conversation id
+  *
+  * @apiError (Bad Request 400) {String} message Parameter conversation_id is invalid
+  *
+  * @apiError (Not Found 404) {String} message Bot or Conversation not found
+  */
+
+  {
+    method: 'DELETE',
+    path: '/connectors/:connector_id/conversations/:conversation_id',
+    validators: [],
+    handler: controllers.Conversations.deleteConversationByConnectorId,
+  },
+
 ]

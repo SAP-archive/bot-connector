@@ -23,8 +23,6 @@ export default class ConversationController {
   static async getConversationByConnectorId (req, res) {
     const { connector_id, conversation_id } = req.params
 
-    console.log(connector_id, conversation_id)
-
     const conversation = await models.Conversation.findOne({ _id: conversation_id, connector: connector_id }).populate('participants messages')
 
     if (!conversation) { throw new NotFoundError('Conversation') }
