@@ -1,5 +1,3 @@
-module.exports = {
-  test: require('./test.js'),
-  development: require('./development.js'),
-  production: require('./production.js'),
-}
+var env = process.env.NODE_ENV || 'development'
+
+module.exports = require('./' + env + '.js')
