@@ -6,7 +6,7 @@ import { BadRequestError } from '../utils/errors'
 const permitted = '{type,slug,isActivated,token,userName,apiKey,webhook,clientId,clientSecret,password,phoneNumber,serviceId}'
 
 export async function createChannelByConnectorId (req) {
-  const { isActivated, slug, type } = req.body
+  const { slug, type } = req.body
   const newChannel = new models.Channel(filter(req.body, permitted))
 
   if (!type) {

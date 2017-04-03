@@ -4,7 +4,7 @@
   "description": "Recast.AI Bot Connector",
   "main": "src/index.js",
   "scripts": {
-    "lint": "eslint src config",
+    "lint": "eslint src",
     "start": "npm run build && cross-env NODE_ENV=production node dist/index.js",
     "start-dev": "cross-env NODE_ENV=development nodemon src/index.js --exec babel-node",
     "test": "cross-env NODE_ENV=test babel-node src/test.js",
