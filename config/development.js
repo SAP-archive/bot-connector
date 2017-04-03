@@ -8,5 +8,5 @@ module.exports = {
     port: '8080',
     url: 'localhost:8080',
   },
-  base_url: 'http://localhost:8080',
+  base_url: 'https://dbc8880f.ngrok.io',
 }
