@@ -6,12 +6,23 @@ export const renderCreated = (res, content) => {
   return res.status(201).json(content)
 }
 
-export const renderDeleted = (res) => {
-  return res.status(204).send()
+export const renderDeleted = (res, message) => {
+  return res.status(200).json({
+    results: null,
+    message,
+  })
 }
 
 export const renderBadRequest = (res, content) => {
   return res.status(400).json(content)
+}
+
+export const renderForbidden = (res, content) => {
+  return res.status(401).json(content)
+}
+
+export const renderUnauthorized = (res, content) => {
+  return res.status(403).json(content)
 }
 
 export const renderNotFound = (res, content) => {
