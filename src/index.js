@@ -1,29 +1,44 @@
-import cors from 'cors'
 import express from 'express'
 import mongoose from 'mongoose'
 import bodyParser from 'body-parser'
+import _ from 'lodash'
 
 import configs from '../config'
 import { createRouter } from './routes/'
-import { initServices } from './utils/init'
-
-import Logger from './utils/Logger'
+import { initServices, Logger } from './utils'
 
 const app = express()
 
-// Load the configuration
-const env = process.env.NODE_ENV || 'development'
-const config = configs[env]
+// Load the mongoose Schemas
 
-// Load the models
-global.Bot = require('./models/Bot.model')
-global.Channel = require('./models/Channel.model')
-global.Conversation = require('./models/Conversation.model')
-global.Message = require('./models/Message.model')
-global.Participant = require('./models/Participant.model')
+import _models from './models'
+import _controllers from './controllers'
+import _services from './services'
+
+global.models = _models
+global.controllers = _controllers
+global.services = {}
+
+_.forOwn(_services, (service, serviceName) => {
+  services[serviceName.toLowerCase()] = service
+})
+
+const createRouter = require('./routes').createRouter
+
+// Load the configuration
+global.config = configs
 
 // Enable Cross Origin Resource Sharing
-app.use(cors())
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Headers', '*, X-Expiry, X-Client, X-Access-Token, X-Uuid, Content-Type, Authorization')
+  res.header('Access-Control-Expose-Headers', 'X-Client, X-Access-Token, X-Expiry, X-Uuid')
+  res.header('Access-Control-Allow-Methods', 'GET, DELETE, POST, PUT, OPTIONS')
+  res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate')
+  res.header('Expires', '-1')
+  res.header('Pragma', 'no-cache')
+  next()
+})
 
 // Enable auto parsing of json content
 app.use(bodyParser.json())
@@ -33,8 +48,14 @@ app.use(bodyParser.urlencoded({ extended: true }))
 mongoose.Promise = global.Promise
 
 // Mongoose connection
-/* eslint-disable no-console */
-mongoose.connect(`mongodb://${config.db.host}:${config.db.port}/${config.db.dbName}`)
+let dbUrl = 'mongodb://'
+
+if (config.db.username) {
+  dbUrl = `${dbUrl}${config.db.username}:${config.db.password}@`
+}
+dbUrl = `${dbUrl}${config.db.host}:${config.db.port}/${config.db.dbName}?ssl=${config.db.ssl || 'false'}`
+
+mongoose.connect(dbUrl)
 const db = mongoose.connection
 db.on('error', err => {
   Logger.error('FAILED TO CONNECT', err)
@@ -45,8 +66,8 @@ db.on('error', err => {
 db.once('open', () => {
   createRouter(app)
   initServices()
-  app.listen(config.server.port)
-  app.emit('ready')
-  Logger.info(`App is running and listening to port ${config.server.port}`)
+  app.listen(config.server.port, () => {
+    app.emit('ready')
+    Logger.info(`App is running and listening to port ${config.server.port}`)
+  })
 })
-/* eslint-enable no-console */
