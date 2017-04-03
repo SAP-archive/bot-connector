@@ -1,8 +1,8 @@
-import crypto from 'crypto'
-import tsscmp from 'tsscmp'
+import request from 'superagent'
+
+import { Logger, getWebhookToken } from '../utils'
+import { StopPipeline, BadRequestError } from '../utils/errors'
 import ServiceTemplate from './Template.service'
-import { StopPipeline, ValidationError } from '../utils/errors'
-import { getWebhookToken } from '../utils'
 
 const agent = require('superagent-promise')(require('superagent'), Promise)
 
@@ -18,21 +18,18 @@ export default class MessengerService extends ServiceTemplate {
   /**
    * Check to see if the message is form a valid webhook
    */
-  static checkSecurity (req, channel) {
-    const xHubSignature = req.headers['X-Hub-Signature'] || req.headers['x-hub-signature']
-    const parsedXHubSignature = xHubSignature.split('=')
-    const serverSignature = crypto.createHmac(parsedXHubSignature[0], channel.apiKey).update(JSON.stringify(req.body)).digest('hex')
-    return ('https://'.concat(req.headers.host) === channel.webhook && tsscmp(parsedXHubSignature[1], serverSignature))
+  static checkSecurity (req, res) {
+    res.status(200).send()
   }
 
   /**
    * Check to see if the message is form a valid webhook
    */
   static checkParamsValidity (channel) {
-    const { token, webhook, apiKey } = channel
-    if (!token) { throw new ValidationError('token', 'missing') }
-    if (!webhook) { throw new ValidationError('webhook', 'missing') }
-    if (!apiKey) { throw new ValidationError('apiKey', 'missing') }
+    const { token, apiKey } = channel
+
+    if (!token) { throw new BadRequestError('Parameter token is missing') }
+    if (!apiKey) { throw new BadRequestError('Parameter apiKey is missing') }
 
     return true
   }
@@ -43,7 +40,7 @@ export default class MessengerService extends ServiceTemplate {
   static extractOptions (req) {
     const { body } = req
     return {
-      chatId: body.entry[0].messaging[0].recipient.id,
+      chatId: `${body.entry[0].messaging[0].recipient.id}-${body.entry[0].messaging[0].sender.id}`,
       senderId: body.entry[0].messaging[0].sender.id,
     }
   }
@@ -51,8 +48,8 @@ export default class MessengerService extends ServiceTemplate {
   /**
    * Send directly a 200 to avoid the echo
    */
-  static async beforePipeline (res) {
-    return res.status(200).send()
+  static async beforePipeline (req, res, channel) {
+    return channel
   }
 
   /**
@@ -63,19 +60,44 @@ export default class MessengerService extends ServiceTemplate {
       attachment: {},
       channelType: 'messenger',
     }
-    if (message.entry[0].messaging[0].postback) {
-      msg.attachment.text = 'start_conversation'
+
+    if (message.entry[0].messaging[0].account_linking) {
+      msg.attachment.type = 'account_linking'
+      msg.attachment.status = message.entry[0].messaging[0].account_linking.status
+
+      if (message.entry[0].messaging[0].account_linking.authorization_code) {
+        msg.attachment.content = message.entry[0].messaging[0].account_linking.authorization_code
+      }
+
       return Promise.all([conversation, msg, opts])
     }
 
-    if (!message.entry[0].messaging[0].message || (message.entry[0].messaging[0].message.is_echo && message.entry[0].messaging[0].message.app_id)) { throw new StopPipeline() }
+    if (message.entry[0].messaging[0].postback) {
+      msg.attachment.type = 'payload'
+      msg.attachment.content = message.entry[0].messaging[0].postback.payload
+      return Promise.all([conversation, msg, opts])
+    }
+
+    if (!message.entry[0].messaging[0].message || (message.entry[0].messaging[0].message.is_echo && message.entry[0].messaging[0].message.app_id)) {
+      throw new StopPipeline()
+    }
 
     const facebookMessage = message.entry[0].messaging[0].message
+    const attachmentType = facebookMessage.attachments && facebookMessage.attachments[0].type
 
-    if (facebookMessage.attachment) {
-      msg.attachment.type = facebookMessage.attachment[0].type
-      msg.attachment.content = facebookMessage.attachment[0].payload.url
-    } else { msg.attachment.text = facebookMessage.text }
+    if (attachmentType) {
+      msg.attachment.type = attachmentType === 'image' ? 'picture' : attachmentType
+      msg.attachment.content = facebookMessage.attachments[0].payload.url
+    } else {
+      msg.attachment.type = 'text'
+
+      if (facebookMessage.quick_reply) {
+        msg.attachment.content = facebookMessage.quick_reply.payload
+        msg.attachment.is_button_click = true
+      } else {
+        msg.attachment.content = facebookMessage.text
+      }
+    }
 
     return Promise.all([conversation, msg, opts])
   }
@@ -84,16 +106,16 @@ export default class MessengerService extends ServiceTemplate {
    * Parse message from bot-connector format to bot-connecto format
    */
   static formatMessage (conversation, message, opts) {
-    let msg
+    let msg = null
 
     if (message.attachment.type !== 'text' && message.attachment.type !== 'quickReplies') {
-      const buttons = []
+      let buttons = []
       msg = {
         recipient: { id: opts.senderId },
         message: {
           attachment: {
             type: String,
-            payload: { },
+            payload: {},
           },
         },
       }
@@ -109,7 +131,9 @@ export default class MessengerService extends ServiceTemplate {
         msg.message.attachment.type = 'template'
         msg.message.attachment.payload.template_type = 'generic'
         message.attachment.content.buttons.forEach(e => {
-          if (e.type === 'web_url' || e.type === 'account_link') {
+          if (e.type === 'account_unlink') {
+            buttons.push({ type: e.type })
+          } else if (e.type === 'web_url' || e.type === 'account_link') {
             buttons.push({ type: e.type, title: e.title, url: e.value })
           } else if (e.type === 'postback' || e.type === 'phone_number' || e.type === 'element_share') {
             buttons.push({ type: e.type, title: e.title, payload: e.value })
@@ -123,6 +147,30 @@ export default class MessengerService extends ServiceTemplate {
           buttons,
         })
         msg.message.attachment.payload.elements = elements
+      } else if (message.attachment.type === 'carouselle') {
+
+        const elements = []
+        msg.message.attachment.type = 'template'
+        msg.message.attachment.payload.template_type = 'generic'
+        message.attachment.content.forEach(content => {
+          buttons = []
+          content.buttons.forEach(e => {
+            if (e.type === 'web_url' || e.type === 'account_link') {
+              buttons.push({ type: e.type, title: e.title, url: e.value })
+            } else if (e.type === 'postback' || e.type === 'phone_number' || e.type === 'element_share') {
+              buttons.push({ type: e.type, title: e.title, payload: e.value })
+            }
+          })
+          elements.push({
+            subtitle: content.subtitle,
+            title: content.title,
+            item_url: content.itemUrl,
+            image_url: content.imageUrl,
+            buttons,
+          })
+        })
+
+        msg.message.attachment.payload.elements = elements
       }
 
     } else if (message.attachment.type === 'quickReplies') {
@@ -133,7 +181,7 @@ export default class MessengerService extends ServiceTemplate {
           quick_replies: [],
         },
       }
-      message.attachment.content.buttons.forEach(e => msg.message.quick_replies.push({ content_type: e.type, title: e.title, payload: e.value }))
+      message.attachment.content.buttons.forEach(e => msg.message.quick_replies.push({ content_type: e.type ? e.type : 'text', title: e.title, payload: e.value }))
     } else {
       msg = {
         recipient: { id: opts.senderId },
@@ -150,7 +198,7 @@ export default class MessengerService extends ServiceTemplate {
    */
   static async sendMessage (conversation, message) {
     await agent('POST', `https://graph.facebook.com/v2.6/me/messages?access_token=${conversation.channel.token}`)
-          .send(message)
+      .send(message)
   }
 
 }
