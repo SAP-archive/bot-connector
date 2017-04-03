@@ -57,6 +57,7 @@
     "babel-plugin-transform-runtime": "^6.15.0",
     "blueimp-md5": "^2.5.0",
     "body-parser": "^1.15.2",
+    "callr": "^1.0.0",
     "chai-spies": "^0.7.1",
     "cors": "^2.8.1",
     "cross-env": "3.1.3",
