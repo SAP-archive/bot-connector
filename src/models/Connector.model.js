@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
-import uuidV4 from 'uuidV4'
+import uuidV4 from 'uuid/v4'
 
-const BotSchema = new mongoose.Schema({
+const ConnectorSchema = new mongoose.Schema({
   _id: { type: String, default: uuidV4 },
   url: { type: String, required: true },
   channels: [{ type: String, ref: 'Channel' }],
@@ -13,31 +13,32 @@ const BotSchema = new mongoose.Schema({
 
 async function generateUUID (next) {
   if (this.isNew) {
-    while (await models.Bot.findOne({ _id: this._id })) {
+    while (await models.Connector.findOne({ _id: this._id })) {
       this._id = uuidV4()
     }
   }
   next()
 }
 
-BotSchema.pre('save', generateUUID)
+ConnectorSchema
+  .pre('save', generateUUID)
 
-BotSchema.virtual('serialize').get(function () {
+ConnectorSchema.virtual('serialize').get(function () {
   return {
     id: this._id,
     url: this.url,
-    channels: this.channels,
     conversations: this.conversations,
+    channels: this.channels.map(c => c.serialize || c),
   }
 })
 
-BotSchema.virtual('lightSerialize').get(function () {
+ConnectorSchema.virtual('lightSerialize').get(function () {
   return {
     id: this._id,
     url: this.url,
   }
 })
 
-const Bot = mongoose.model('Bot', BotSchema)
+const Connector = mongoose.model('Connector', ConnectorSchema)
 
-module.exports = Bot
+module.exports = Connector
