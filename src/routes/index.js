@@ -2,7 +2,7 @@ import express from 'express'
 import { Logger } from '../utils'
 
 import appRoutes from './App.routes'
-import oauthRoutes from '/Oauth.routes'
+import oauthRoutes from './Oauth.routes'
 import connectorRoutes from './Connectors.routes'
 import channelRoutes from './Channels.routes'
 import messagesRoutes from './Messages.routes'

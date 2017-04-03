@@ -8,7 +8,7 @@ const agent = require('superagent-promise')(require('superagent'), Promise)
 /**
  * Connector's Kik Service
  */
-export class ConnectorKikService extends ServiceTemplate {
+export default class KikService extends ServiceTemplate {
 
   /*
    * Subscribe webhook
