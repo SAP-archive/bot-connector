@@ -30,8 +30,8 @@ export default class ConnectorsController {
   }
 
   /**
-  * Show a connector
-  */
+   * Show a connector
+   */
   static async getConnectorByBotId (req, res) {
     const { connector_id } = req.params
 
@@ -46,14 +46,16 @@ export default class ConnectorsController {
   }
 
   /**
-  * Update a connector
-  */
+   * Update a connector
+   */
   static async updateConnectorByBotId (req, res) {
     const { connector_id } = req.params
 
     const connector = await models.Connector.findOneAndUpdate({ _id: connector_id },
       { $set: filter(req.body, permittedUpdate) }, { new: true }
     ).populate('channels')
+
+    if (!connector) { throw new NotFoundError('Connector') }
 
     return renderOk(res, {
       results: connector.serialize,
@@ -62,13 +64,15 @@ export default class ConnectorsController {
   }
 
   /**
-  * Delete a connector
-  */
+   * Delete a connector
+   */
   static async deleteConnectorByBotId (req, res) {
     const { connector_id } = req.params
 
     const connector = await models.Connector.findById(connector_id)
           .populate('channels conversations')
+
+    if (!connector) { throw new NotFoundError('Connector') }
 
     await Promise.all([
       ...connector.conversations.map(c => c.remove()),
