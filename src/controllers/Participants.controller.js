@@ -10,7 +10,7 @@ export default class ParticipantController {
     const { connector_id } = req.params
     const results = []
 
-    const conversations = models.Conversations.find({ connector: connector_id }).populate('participants')
+    const conversations = await models.Conversation.find({ connector: connector_id }).populate('participants')
 
     conversations.forEach(c => {
       c.participants.forEach(p => results.push(p.serialize))
@@ -28,7 +28,7 @@ export default class ParticipantController {
   static async getParticipantByConnectorId (req, res) {
     const { participant_id } = req.params
 
-    const participant = models.Participant.findById(participant_id)
+    const participant = await models.Participant.findById(participant_id)
 
     if (!participant) { throw new NotFoundError('Participant') }
 

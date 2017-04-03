@@ -25,6 +25,8 @@ export default class ConversationController {
 
     const conversation = await models.Conversation.findOne({ _id: conversation_id, connector: connector_id }).populate('participants messages')
 
+    console.log(conversation)
+
     if (!conversation) { throw new NotFoundError('Conversation') }
 
     return renderOk(res, {

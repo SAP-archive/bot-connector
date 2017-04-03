@@ -40,7 +40,7 @@ ConversationSchema.virtual('full').get(function () {
     chatId: this.chatId,
     channel: this.channel,
     participants: this.participants.map(p => p.serialize),
-    messages: this.messages.filter(m => m.isActive).map(m => m.serialize),
+    messages: this.messages.map(m => m.serialize),
   }
 })
 
