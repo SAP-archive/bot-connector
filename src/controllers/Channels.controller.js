@@ -1,117 +1,130 @@
 import filter from 'filter-object'
 
 import {
-  notFoundError,
-  handleMongooseError,
-} from '../utils/errors'
-import { invoke } from '../utils'
+  invoke,
+} from '../utils'
 
-const permitted = '{type,slug,isActivated,token,userName,apiKey,webhook}'
+import {
+  NotFoundError,
+  ConflictError,
+} from '../utils/errors'
+
+import {
+  renderOk,
+  renderCreated,
+  renderDeleted,
+} from '../utils/responses'
+
+const permitted = '{type,slug,isActivated,token,userName,apiKey,webhook,clientId,clientSecret,botuser,password,phoneNumber,serviceId}'
 
 export default class ChannelsController {
 
   /**
   * Create a new channel
   */
-  static async createChannelByBotId (req, res) {
-    let bot, channel
-    const { bot_id } = req.params
-    const { slug } = req.body
+  static async createChannelByConnectorId (req, res) {
+    const { connector_id } = req.params
     const params = filter(req.body, permitted)
+    const { slug } = req.body
 
-    try {
-      bot = await Bot.findById(req.params.bot_id).populate('channels').exec()
-      if (!bot) { throw new notFoundError('Bot') }
+    const connector = await models.Connector.findById(connector_id).populate('channels')
 
-      channel = await Channel.findOne({ bot: bot_id, slug })
-      if (channel) {
-        return res.status(409).json({ results: null, message: 'Channel slug already exists' })
-      }
-      channel = await new Channel({ ...params, bot: bot._id }).save()
+    if (!connector) { throw new NotFoundError('Connector') }
 
-      bot.channels.push(channel._id)
-      await bot.save()
-      await invoke(channel.type, 'onChannelCreate', [channel])
+    let channel = connector.channels.find(c => c.slug === slug)
+    if (channel) { throw new ConflictError('Channel slug is already taken') }
 
-      res.status(201).json({ results: channel.serialize, message: 'Channel successfully created' })
-    } catch (err) {
-      /* coverage ignore if */
-      if (bot && channel) {
-        bot.channels = bot.channels.filter(c => c !== channel._id)
-        await Promise.all([bot.save(), channel.remove()])
-      }
-      return handleMongooseError(err, res, 'Error while creating channel')
-    }
+    channel = await new models.Channel({ ...params, connector: connector._id })
+    channel.webhook = `${config.base_url}/webhook/${channel._id}`
+    connector.channels.push(channel._id)
+
+    await Promise.all([
+      connector.save(),
+      channel.save(),
+    ])
+    await invoke(channel.type, 'onChannelCreate', [channel])
+
+    return renderCreated(res, {
+      results: channel.serialize,
+      message: 'Channel successfully created',
+    })
   }
 
   /**
   * Index bot's channels
   */
-  static getChannelsByBotId (req, res) {
-    Channel.find({ bot: req.params.bot_id })
-    .then(channels => {
-      if (!channels.length) { return res.json({ results: [], message: 'No channels' }) }
-      res.json({ results: channels.map(c => c.serialize), message: 'Channels successfully rendered' })
+  static async getChannelsByConnectorId (req, res) {
+    const { connector_id } = req.params
+
+    const connector = await models.Connector.findById(connector_id)
+          .populate('channels')
+
+    if (!connector) { throw new NotFoundError('Connector') }
+    if (!connector.channels.length) {
+      return renderOk(res, { results: [], message: 'No channels' })
+    }
+
+    return renderOk(res, {
+      results: connector.channels.map(c => c.serialize),
+      message: 'Channels successfully rendered',
     })
-    .catch(/* coverage ignore next */ err => handleMongooseError(err, res, 'Error while getting channel'))
   }
 
   /**
   * Show a channel
   */
-  static getChannelByBotId (req, res) {
-    Channel.findOne({ slug: req.params.channel_slug, bot: req.params.bot_id })
-    .then(channel => {
-      if (!channel) { return Promise.reject(new notFoundError('Channel')) }
-      res.json({ results: channel.serialize, message: 'Channel successfully rendered' })
+  static async getChannelByConnectorId (req, res) {
+    const { connector_id, channel_slug } = req.params
+
+    const channel = await models.Channel.findOne({ connector: connector_id, slug: channel_slug })
+
+    if (!channel) { throw new NotFoundError('Channel') }
+
+    return renderOk(res, {
+      results: channel.serialize,
+      message: 'Channel successfully rendered',
     })
-    .catch(err => handleMongooseError(err, res, 'Error while getting channel'))
   }
 
   /**
   * Update a channel
   */
-  static async updateChannelByBotId (req, res) {
-    try {
-      const { bot_id, channel_slug } = req.params
-      const { slug } = req.body
+  static async updateChannelByConnectorId (req, res) {
+    const { connector_id, channel_slug } = req.params
 
-      if (slug && await (Channel.findOne({ bot: bot_id, slug }))) {
-        return res.status(409).json({ results: null, message: 'Channel slug already exists' })
-      }
+    const oldChannel = await models.Channel.findOne({ slug: channel_slug, connector: connector_id })
 
-      const channel = await Channel.findOneAndUpdate({ slug: channel_slug, bot: bot_id }, { $set: filter(req.body, permitted) }, { new: true })
-      if (!channel) { throw new notFoundError('Channel') }
+    if (!oldChannel) { throw new NotFoundError('Channel') }
 
-      await invoke(channel.type, 'onChannelUpdate', [channel])
+    const channel = await models.Channel.findOneAndUpdate(
+      { slug: channel_slug, connector: connector_id },
+      { $set: filter(req.body, permitted) },
+      { new: true }
+    )
+    if (!channel) { throw new NotFoundError('Channel') }
 
-      res.json({ results: channel.serialize, message: 'Channel successfully updated' })
-    } catch (err) {
-      handleMongooseError(err, res, 'Error while updating channel')
-    }
+    await invoke(channel.type, 'onChannelUpdate', [channel, oldChannel])
+
+    renderOk(res, {
+      results: channel.serialize,
+      message: 'Channel successfully updated',
+    })
   }
 
   /**
   * Delete a channel
   */
-  static async deleteChannelByBotId (req, res) {
-    const { channel_slug, bot_id } = req.params
+  static async deleteChannelByConnectorId (req, res) {
+    const { connector_id, channel_slug } = req.params
 
-    try {
-      const channel = await Channel.findOne({ slug: channel_slug, bot: bot_id })
-      .populate({ path: 'bot', populate: { path: 'channels', model: 'Channel' } })
-      .exec()
-      if (!channel) { throw new notFoundError('Channel') }
+    const channel = await models.Channel.findOne({ connector: connector_id, slug: channel_slug })
+    if (!channel) { throw new NotFoundError('Channel') }
 
-      const { bot } = channel
-      bot.channels = bot.channels.filter(c => c._id.toString() !== channel._id.toString())
+    await Promise.all([
+      channel.remove(),
+      invoke(channel.type, 'onChannelDelete', [channel]),
+    ])
 
-      await invoke(channel.type, 'onChannelDelete', [channel])
-      await Promise.all([bot.save(), channel.remove()])
-
-      res.json({ results: null, message: 'Channel successfully deleted' })
-    } catch (err) {
-      handleMongooseError(err, res, 'Error while deleting channel')
-    }
+    renderDeleted(res, 'Channel successfully deleted')
   }
 }

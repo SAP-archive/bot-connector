@@ -1,16 +1,12 @@
-import MessagesController from '../controllers/Messages.controller.js'
-import * as MessageValidators from '../validators/Messages.validators.js'
-
 export default [
 
   /**
-  * @api {post} /bots/:bot_id/conversations/:conversation_id/messages Post a message into a specific conversation
+  * @api {post} /conversations/:conversation_id/messages Post a message into a specific conversation
   * @apiName Post a message to a conversation
   * @apiGroup Messages
   *
   * @apiDescription Post a message into a specific conversation. With this route, you do not have to only answer to an user as response of a previous message, we can also directly send him messages
   *
-  * @apiParam (Route Parameters) {ObjectId} bot_id Bot ObjectId
   * @apiParam (Route Parameters) {ObjectId} conversation_id Conversation ObjectId
   *
   * @apiParam (Text message parameters) {String} type=text Must be 'text' in this case
@@ -43,9 +39,6 @@ export default [
   * @apiSuccess (Success 200) {Participant} results.participant Message Participant
   * @apiSuccess (Success 200) {String} message Message successfully posted
   *
-  * @apiError (Bad Request 400 for bot_id) {null} results Response data
-  * @apiError (Bad Request 400 for bot_id) {String} message Parameter bot_id is invalid
-  *
   * @apiError (Bad Request 400 for conversation_id) {null} results Response data
   * @apiError (Bad Request 400 for conversation_id) {String} message Parameter conversation_id is invalid
   *
@@ -60,19 +53,17 @@ export default [
   */
   {
     method: 'POST',
-    path: '/bots/:bot_id/conversations/:conversation_id/messages',
-    validators: [MessageValidators.postMessage],
-    handler: MessagesController.postMessage,
+    path: '/connectors/:connector_id/conversations/:conversation_id/messages',
+    validators: [],
+    handler: controllers.Messages.postMessage,
   },
 
   /**
-  * @api {post} /bots/:bot_id/messages Post a message to a specific bot
+  * @api {post} /messages Post a message to a specific bot
   * @apiName Post a message to a bot
   * @apiGroup Bot
   *
   * @apiDescription Post a message to a specific. With this route, you do not have to only answer to an user as response of a previous message, we can also directly send him messages
-  *
-  * @apiParam (Route Parameters) {ObjectId} bot_id Bot ObjectId
   *
   * @apiParam (Text message parameters) {String} type=text Must be 'text' in this case
   * @apiParam (Text message parameters) {String} value Your message
@@ -104,9 +95,6 @@ export default [
   * @apiSuccess (Success 200) {Participant} results.participant Message Participant
   * @apiSuccess (Success 200) {String} message Message successfully posted
   *
-  * @apiError (Bad Request 400 for bot_id) {null} results Response data
-  * @apiError (Bad Request 400 for bot_id) {String} message Parameter bot_id is invalid
-  *
   * @apiError (Bad Request 400 for conversation_id) {null} results Response data
   * @apiError (Bad Request 400 for conversation_id) {String} message Parameter conversation_id is invalid
   *
@@ -118,8 +106,8 @@ export default [
   */
   {
     method: 'POST',
-    path: '/bots/:bot_id/messages',
+    path: '/connectors/:connector_id/messages',
     validators: [],
-    handler: MessagesController.postMessages,
+    handler: controllers.Messages.postMessages,
   },
 ]

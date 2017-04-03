@@ -21,21 +21,21 @@ Bot Connector supports the following channels:
 * [Kik](https://github.com/RecastAI/bot-connector/wiki/Channel---Kik)
 * [Slack](https://github.com/RecastAI/bot-connector/wiki/Channel---Slack)
 * [Messenger](https://github.com/RecastAI/bot-connector/wiki/Channel---Messenger)
+* [Callr](https://github.com/RecastAI/bot-connector/wiki/Channel-CALLR)
+* [Telegram](https://github.com/RecastAI/bot-connector/wiki/Channel-Telegram)
+* [Twilio](https://github.com/RecastAI/bot-connector/wiki/Channel-Twilio)
 
 You can find more information on each channel in the [wiki](https://github.com/RecastAI/bot-connector/wiki)
 
 More will be added, and you can [contribute](https://github.com/RecastAI/bot-connector/blob/master/CONTRIBUTING.md) if you want to, and add a thumbs up for the channel you want to see implemented first ;)
 (To do so, fork this repo, add a thumbs up and make a PR!)
 
-* Callr 👍👍
 * Cisco Spark 👍👍
 * Discord 👍
 * Line 👍
 * Microsoft Teams 👍
 * Ryver 👍
 * Skype 👍
-* Telegram 👍👍👍
-* Twillio
 * Viber
 * Wechat 👍👍
 * Zinc.it 👍
@@ -64,21 +64,21 @@ yarn install
 yarn start-dev
 ```
 
-#### Setup your bot
+#### Setup your connector
 
-First you need to create a bot with Bot Connector's API:
+First of all, you need to create a connector with the Bot Connector's API.
 ```sh
-curl -X POST 'http://localhost:8080/bots' --data 'url=YOUR_BOT_ENDPOINT_URL'
+curl -X POST 'http://localhost:8080/connectors' --data 'url=YOUR_CONNECTOR_ENDPOINT_URL'
 ```
 
-Now you need the bot itself. You can use the bot in the *example* directory as a starter.
+Then you need some code so the Bot Connector, via the *connector* you've just created, can send you the messages it receives. You can use the code from the *example* as a starter.
 ```bash
 cd example
 yarn install
 yarn start
 ```
 
-Now that your bot and Bot Connector are running, you have to create channels to let your bot talk on whatever messaging platform you want. Refer to channels' wiki pages for channel-specific examples.
+Now that your bot (well, your code) and the Bot Connector are running, you have to create channels. Channel is the actual link between your connector and a specific service like Messenger, Slack or Kik. A connector can have multiple channels.
 
 ## How it works
 
@@ -90,22 +90,22 @@ This pipeline allows us to have an abstraction of messages independent of the pl
 
 #### Receive a message
 
-Bot Connector posts on your bot endpoint each time a new message arrives from a channel.
+The Bot Connector posts on your connector's endpoint each time a new message arrives from a channel.
 * a new message is received by Bot Connector
 * the message is parsed by the corresponding service
 * the message is saved in MongoDB
-* the message is post to the bot endpoint
+* the message is post to the connector endpoint
 
-![Bot Conector flow receive](https://cdn.recast.ai/bot-connector/flow-1.png)
+![BotConnector-Receive](https://cdn.recast.ai/bot-connector/flow-1.png)
 
 #### Post a message
 
-To send a new message, you have to post it the to Bot Connector's API
+To send a new message, you have to post it to Bot Connector's API
 * the messages are saved in MongoDB
 * the messages are formatted by the corresponding service to match the channel's format
 * the messages are sent by Bot Connector to the corresponding channel
 
-![Bot Conector flow receive](https://cdn.recast.ai/bot-connector/flow-2.png)
+![BotConnector-Sending](https://cdn.recast.ai/bot-connector/flow-2.png)
 
 ## Messages format
 
@@ -145,6 +145,7 @@ Bot Connector supports several message formats:
   content: {
     title: 'My card title',
     imageUrl: 'url_to_my_image',
+    subtitle: 'My card subtitle',
     buttons: [
       {
         title: 'My button title',
@@ -189,4 +190,4 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

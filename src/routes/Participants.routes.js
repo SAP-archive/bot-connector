@@ -1,15 +1,10 @@
-import ParticipantController from '../controllers/Participants.controller'
-import * as participantsValidators from '../validators/Participants.validators.js'
-
 export default [
   /**
-  * @api {get} /bots/:bot_id/participants Index Bot's Participants
+  * @api {get} /participants Index Connector's Participants
   * @apiName List participants
   * @apiGroup Participants
   *
-  * @apiDescription Index bot participants (for all conversations and all channels)
-  *
-  * @apiParam (Route Parameters) {ObjectId} bot_id Bot id
+  * @apiDescription Index connector participants (for all conversations and all channels)
   *
   * @apiSuccess (Success 200 with at least one participant) {Array} results Array of participants
   * @apiSuccess (Success 200 with at least one participant) {ObjectId} results.id Participant objectId
@@ -22,24 +17,21 @@ export default [
   *
   * @apiSuccess (Success 200 with no participant) {null} results Response data
   * @apiSuccess (Success 200 with no participant) {String} message No participants
-  *
-  * @apiError (Bad Request 400) {String} message Parameter bot_id is invalid
   */
   {
     method: 'GET',
-    path: '/bots/:bot_id/participants',
-    validators: [participantsValidators.getParticipantsByBotId],
-    handler: ParticipantController.getParticipantsByBotId,
+    path: '/connectors/:connector_id/participants',
+    validators: [],
+    handler: controllers.Participants.getParticipantsByConnectorId,
   },
 
   /**
-  * @api {get} /bots/:bot_id/participants/:participant_id Show bot a specific participant (for a bot)
+  * @api {get} /participants/:participant_id Show a specific participant (for a connector)
   * @apiName Show participant
   * @apiGroup Participants
   *
-  * @apiDescription Show bot a specific participant (for a bot)
+  * @apiDescription Show a specific participant (for a connector)
   *
-  * @apiParam (Route Parameters) {ObjectId} bot_id Bot ObjectId
   * @apiParam (Route Parameters) {ObjectId} participant_id Participant ObjectId
   *
   * @apiSuccess (Success 200) {Participant} results Participant
@@ -50,15 +42,12 @@ export default [
   * @apiSuccess (Success 200) {Boolean} results.isBot Is this particpant a bot ?
   * @apiSuccess (Success 200) {String} message Participant successfully rendered
   *
-  * @apiError (Bad Request 400 for bot_id) {null} results Response data
-  * @apiError (Bad Request 400 for bot_id) {String} message Parameter bot_id is invalid
-  *
   * @apiError (Bad Request 400 for participant_id) {String} message Parameter participant_id is invalid
   */
   {
     method: 'GET',
-    path: '/bots/:bot_id/participants/:participant_id',
-    validators: [participantsValidators.getParticipantByBotId],
-    handler: ParticipantController.getParticipantByBotId,
+    path: '/connectors/:connector_id/participants/:participant_id',
+    validators: [],
+    handler: controllers.Participants.getParticipantByConnectorId,
   },
 ]

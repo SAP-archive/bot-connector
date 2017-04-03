@@ -34,4 +34,5 @@ export default class ServiceTemplate {
 
   /* Call to send a message to a bot */
   static sendMessage = noop
+
 }

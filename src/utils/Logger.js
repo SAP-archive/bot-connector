@@ -12,6 +12,8 @@ const COLOR = {
 /* eslint-disable no-console */
 class Logger {
   static error (...messages) {
+    if (process.env.NODE_ENV === 'test') { return }
+
     messages.map(message => Logger.show(message, COLOR.RED))
   }
 

@@ -1,16 +1,21 @@
 import express from 'express'
+import { Logger } from '../utils'
 
-import appRoutes from './App.routes.js'
-import botRoutes from './Bots.routes.js'
-import channelRoutes from './Channels.routes.js'
-import messagesRoutes from './Messages.routes.js'
-import webhooksRoutes from './Webhooks.routes.js'
-import conversationRoutes from './Conversations.routes.js'
-import participantsRoutes from './Participants.routes.js'
+import appRoutes from './App.routes'
+import oauthRoutes from './Oauth.routes'
+import connectorRoutes from './Connectors.routes'
+import channelRoutes from './Channels.routes'
+import messagesRoutes from './Messages.routes'
+import webhooksRoutes from './Webhooks.routes'
+import conversationRoutes from './Conversations.routes'
+import participantsRoutes from './Participants.routes'
+
+import { renderConnectorError } from '../utils/errors'
 
 export const routes = [
   ...appRoutes,
-  ...botRoutes,
+  ...oauthRoutes,
+  ...connectorRoutes,
   ...channelRoutes,
   ...messagesRoutes,
   ...webhooksRoutes,
@@ -22,11 +27,21 @@ export const createRouter = app => {
   const router = express.Router()
 
   routes.forEach(r => {
-    if (r.validators) {
-      router[r.method.toLowerCase()](r.path, ...r.validators, r.handler)
-    } else {
-      router[r.method.toLowerCase()](r.path, r.handler)
-    }
+    router[r.method.toLowerCase()](r.path, async (req, res) => {
+      try {
+        // Validate the request parameters
+        for (const validator of r.validators) {
+          await validator(req, res)
+        }
+
+        await r.handler(req, res)
+      } catch (err) {
+        Logger.error(err)
+        renderConnectorError(res, err)
+      }
+    })
   })
+
   app.use(router)
+
 }

@@ -1,11 +1,10 @@
-import channelController from '../controllers/Channels.controller.js'
 import * as channelValidators from '../validators/Channels.validators.js'
 
 export default [
 
   /**
   * @api {post} /bots/:bot_id/channels Create a Channel
-  * @apiName createChannelByBotId
+  * @apiName createChannelByConnectorId
   * @apiGroup Channel
   *
   * @apiDescription Create a channel only with parameters provided.
@@ -36,26 +35,26 @@ export default [
   *
   * @apiError (Bad Request 400 slug not valid) {String} message Return if slug is invalid
   *
-  * @apiError (Conflict 409 slug already taken) {String} message Return if slug is already taken in the current Bot scope
+  * @apiError (Conflict 409 slug already taken) {String} message Return if slug is already taken in the current Connector scope
   */
   {
     method: 'POST',
-    path: '/bots/:bot_id/channels',
-    validators: [channelValidators.createChannelByBotId],
-    handler: channelController.createChannelByBotId,
+    path: '/connectors/:connector_id/channels',
+    validators: [channelValidators.createChannelByConnectorId],
+    handler: controllers.Channels.createChannelByConnectorId,
   },
 
   /**
   * @api {get} /bots/:bot_id/channels Get Channels
-  * @apiName getChannelsByBotId
+  * @apiName getChannelsByConnectorId
   * @apiGroup Channel
   *
-  * @apiDescription Get all Channels of a Bot
+  * @apiDescription Get all Channels of a Connector
   *
-  * @apiParam {String} bot_id Bot id
+  * @apiParam {String} bot_id Connector id
   *
   * @apiSuccess {Array} results Array of Channels
-  * @apiSuccess {String} results.bot Bot object
+  * @apiSuccess {String} results.bot Connector object
   * @apiSuccess {String} results.slug Channel slug
   * @apiSuccess {String} results.type Channel type
   * @apiSuccess {String} results.token Channel token
@@ -67,27 +66,27 @@ export default [
   *
   * @apiError (Bad Request 400 bot_id not valid) {String} message Return if bot_id is invalid
   *
-  * @apiError (Not found 404) {String} message Return if the Bot doesn't exist
+  * @apiError (Not found 404) {String} message Return if the Connector doesn't exist
   */
   {
     method: 'GET',
-    path: '/bots/:bot_id/channels',
-    validators: [channelValidators.getChannelsByBotId],
-    handler: channelController.getChannelsByBotId,
+    path: '/connectors/:connector_id/channels',
+    validators: [],
+    handler: controllers.Channels.getChannelsByConnectorId,
   },
 
   /**
   * @api {get} /bots/:bot_id/channels/:channel_slug Get a Channel
-  * @apiName getChannelByBotId
+  * @apiName getChannelByConnectorId
   * @apiGroup Channel
   *
-  * @apiDescription Get a Channel of a Bot
+  * @apiDescription Get a Channel of a Connector
   *
   * @apiParam {String} channel_slug Channel slug.
   *
   * @apiSuccess {Object} results Channel information
   * @apiSuccess {String} results.channel_slug Channel slug.
-  * @apiSuccess {String} results.bot Bot object.
+  * @apiSuccess {String} results.bot Connector object.
   * @apiSuccess {String} results.slug Channel slug.
   * @apiSuccess {String} results.type Channel type.
   * @apiSuccess {String} results.token Channel token.
@@ -101,18 +100,18 @@ export default [
   *
   * @apiError (Bad Request 400 channel_slug not valid) {String} message Return if channel_slug is invalid
   *
-  * @apiError (Not found 404) {String} message Return if either the Bot or the Channel doesn't exist
+  * @apiError (Not found 404) {String} message Return if either the Connector or the Channel doesn't exist
   */
   {
     method: 'GET',
-    path: '/bots/:bot_id/channels/:channel_slug',
-    validators: [channelValidators.getChannelByBotId],
-    handler: channelController.getChannelByBotId,
+    path: '/connectors/:connector_id/channels/:channel_slug',
+    validators: [],
+    handler: controllers.Channels.getChannelByConnectorId,
   },
 
   /**
   * @api {put} /bots/:bot_id/channels/:channel_slug Update a Channel
-  * @apiName updateChannelByBotId
+  * @apiName updateChannelByConnectorId
   * @apiGroup Channel
   *
   * @apiDescription Update a Channel
@@ -128,7 +127,7 @@ export default [
   *
   * @apiSuccess {Object} results Channel information
   * @apiSuccess {String} results.channel_slug Channel slug.
-  * @apiSuccess {String} results.bot Bot object.
+  * @apiSuccess {String} results.bot Connector object.
   * @apiSuccess {String} results.slug Channel slug.
   * @apiSuccess {String} results.type Channel type.
   * @apiSuccess {String} results.token Channel token.
@@ -142,32 +141,32 @@ export default [
   *
   * @apiError (Bad Request 400 channel_slug not valid) {String} message Return if channel_slug is invalid
   *
-  * @apiError (Not found 404) {String} message Return if either the Bot or the Channel doesn't exist
+  * @apiError (Not found 404) {String} message Return if either the Connector or the Channel doesn't exist
   *
   * @apiError (Conflict 409 slug already taken) {String} message Return if slug is already taken
   */
   {
     method: 'PUT',
-    path: '/bots/:bot_id/channels/:channel_slug',
-    validators: [channelValidators.updateChannelByBotId],
-    handler: channelController.updateChannelByBotId,
+    path: '/connectors/:connector_id/channels/:channel_slug',
+    validators: [],
+    handler: controllers.Channels.updateChannelByConnectorId,
   },
 
   /**
   * @api {delete} /bots/:bot_id/channels/:channel_slug Delete a Channel
-  * @apiName deleteChannelByBotId
+  * @apiName deleteChannelByConnectorId
   * @apiGroup Channel
   *
   * @apiDescription Delete a Channel
   *
   * @apiParam {String} channel_slug Channel slug.
   *
-  * @apiError (Not found 404) {String} message Return if either the Bot or the Channel doesn't exist
+  * @apiError (Not found 404) {String} message Return if either the Connector or the Channel doesn't exist
   */
   {
     method: 'DELETE',
-    path: '/bots/:bot_id/channels/:channel_slug',
-    validators: [channelValidators.deleteChannelByBotId],
-    handler: channelController.deleteChannelByBotId,
+    path: '/connectors/:connector_id/channels/:channel_slug',
+    validators: [],
+    handler: controllers.Channels.deleteChannelByConnectorId,
   },
 ]

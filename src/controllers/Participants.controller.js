@@ -1,49 +1,40 @@
-import { notFoundError, handleMongooseError } from '../utils/errors'
+import { NotFoundError } from '../utils/errors'
+import { renderOk } from '../utils/responses'
 
 export default class ParticipantController {
 
   /*
-  * Index all bot's participants
+  * Index all connector's participants
   */
-  static getParticipantsByBotId (req, res) {
+  static async getParticipantsByConnectorId (req, res) {
+    const { connector_id } = req.params
+    const results = []
 
-    Conversation.find({ bot: req.params.bot_id })
-      .populate('participants')
-      .exec()
-      .then(conversations => {
-        const results = []
+    const conversations = await models.Conversation.find({ connector: connector_id }).populate('participants')
 
-        conversations.forEach(c => {
-          c.participants.forEach(p => results.push(p.serialize))
-        })
+    conversations.forEach(c => {
+      c.participants.forEach(p => results.push(p.serialize))
+    })
 
-        const message = results.length ? 'Participants successfully rendered' : 'No participants'
-        res.json({ results, message })
-      })
-      .catch(err => handleMongooseError(err, res, 'participants'))
+    return renderOk(res, {
+      results,
+      messages: results.length ? 'Participants successfully rendered' : 'No participants',
+    })
   }
 
   /*
   * Show a participant
   */
-  static getParticipantByBotId (req, res) {
-    Conversation.find({ bot: req.params.bot_id })
-      .populate('participants')
-      .exec()
-      .then(conversations => {
-        let participant = null
+  static async getParticipantByConnectorId (req, res) {
+    const { participant_id } = req.params
 
-        conversations.forEach(c => {
-          c.participants.forEach(p => {
-            if (p._id.toString() === req.params.participant_id.toString()) {
-              participant = p.serialize
-            }
-          })
-        })
-        if (!participant) { return Promise.reject(new notFoundError('Participant')) }
-        res.json({ results: participant, message: 'Participant successfully rendered' })
+    const participant = await models.Participant.findById(participant_id)
 
-      })
-      .catch(err => handleMongooseError(err, res, 'Error while getting participant'))
+    if (!participant) { throw new NotFoundError('Participant') }
+
+    return renderOk(res, {
+      results: participant.serialize,
+      message: 'Participant successfully rendered',
+    })
   }
 }
