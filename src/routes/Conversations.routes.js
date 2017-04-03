@@ -50,7 +50,7 @@ export default [
 
   {
     method: 'GET',
-    path: '/connectors/:connector_id/conversations/:conversations_id',
+    path: '/connectors/:connector_id/conversations/:conversation_id',
     validators: [],
     handler: controllers.Conversations.getConversationByConnectorId,
   },
