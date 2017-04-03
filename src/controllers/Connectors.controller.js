@@ -21,7 +21,7 @@ export default class ConnectorsController {
   static async createConnector (req, res) {
     const payload = filter(req.body, permittedAdd)
 
-    const connector = new models.Connector(payload).save()
+    const connector = await new models.Connector(payload).save()
 
     return renderCreated(res, {
       results: connector.serialize,
@@ -76,7 +76,7 @@ export default class ConnectorsController {
       connector.remove(),
     ])
 
-    return renderDeleted(res)
+    return renderDeleted(res, 'Connector successfully deleted')
   }
 
 }
