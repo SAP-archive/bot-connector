@@ -31,7 +31,7 @@ More will be added, and you can [contribute](https://github.com/RecastAI/bot-con
 (To do so, fork this repo, add a thumbs up and make a PR!)
 
 * Cisco Spark 👍👍
-* Discord 👍
+* Discord 👍👍
 * Line 👍
 * Microsoft Teams 👍
 * Ryver 👍
