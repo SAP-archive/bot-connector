@@ -39,6 +39,8 @@ More will be added, and you can [contribute](https://github.com/RecastAI/bot-con
 * Viber
 * Wechat 👍👍
 * Zinc.it 👍
+* Twitter 👍
+* Salesforce 
 
 You can find the current roadmap [here](https://github.com/RecastAI/bot-connector/projects/1).
 
