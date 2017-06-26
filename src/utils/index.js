@@ -30,5 +30,4 @@ export {
 } from './responses'
 
 export Logger from './Logger'
-export { initServices } from './init'
 export { messageTypes, isValidFormatMessage } from './format'
