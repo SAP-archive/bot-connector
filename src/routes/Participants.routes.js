@@ -22,7 +22,7 @@ export default [
     method: 'GET',
     path: '/connectors/:connector_id/participants',
     validators: [],
-    handler: controllers.Participants.getParticipantsByConnectorId,
+    handler: controllers.Participants.index,
   },
 
   /**
@@ -48,6 +48,6 @@ export default [
     method: 'GET',
     path: '/connectors/:connector_id/participants/:participant_id',
     validators: [],
-    handler: controllers.Participants.getParticipantByConnectorId,
+    handler: controllers.Participants.show,
   },
 ]

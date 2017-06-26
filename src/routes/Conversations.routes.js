@@ -20,7 +20,7 @@ export default [
     method: 'GET',
     path: '/connectors/:connector_id/conversations',
     validators: [],
-    handler: controllers.Conversations.getConversationsByConnectorId,
+    handler: controllers.Conversations.index,
   },
 
   /**
@@ -50,7 +50,7 @@ export default [
     method: 'GET',
     path: '/connectors/:connector_id/conversations/:conversation_id',
     validators: [],
-    handler: controllers.Conversations.getConversationByConnectorId,
+    handler: controllers.Conversations.show,
   },
 
   /**
@@ -71,7 +71,7 @@ export default [
     method: 'DELETE',
     path: '/connectors/:connector_id/conversations/:conversation_id',
     validators: [],
-    handler: controllers.Conversations.deleteConversationByConnectorId,
+    handler: controllers.Conversations.delete,
   },
 
 ]

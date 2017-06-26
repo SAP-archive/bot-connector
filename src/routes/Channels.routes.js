@@ -40,8 +40,8 @@ export default [
   {
     method: 'POST',
     path: '/connectors/:connector_id/channels',
-    validators: [channelValidators.createChannelByConnectorId],
-    handler: controllers.Channels.createChannelByConnectorId,
+    validators: [channelValidators.create],
+    handler: controllers.Channels.create,
   },
 
   /**
@@ -72,7 +72,7 @@ export default [
     method: 'GET',
     path: '/connectors/:connector_id/channels',
     validators: [],
-    handler: controllers.Channels.getChannelsByConnectorId,
+    handler: controllers.Channels.index,
   },
 
   /**
@@ -106,7 +106,7 @@ export default [
     method: 'GET',
     path: '/connectors/:connector_id/channels/:channel_slug',
     validators: [],
-    handler: controllers.Channels.getChannelByConnectorId,
+    handler: controllers.Channels.show,
   },
 
   /**
@@ -149,7 +149,7 @@ export default [
     method: 'PUT',
     path: '/connectors/:connector_id/channels/:channel_slug',
     validators: [],
-    handler: controllers.Channels.updateChannelByConnectorId,
+    handler: controllers.Channels.update,
   },
 
   /**
@@ -167,6 +167,6 @@ export default [
     method: 'DELETE',
     path: '/connectors/:connector_id/channels/:channel_slug',
     validators: [],
-    handler: controllers.Channels.deleteChannelByConnectorId,
+    handler: controllers.Channels.delete,
   },
 ]

@@ -27,7 +27,7 @@ export default [
     method: 'GET',
     path: '/connectors/:connector_id',
     validators: [],
-    handler: controllers.Connectors.getConnectorByBotId,
+    handler: controllers.Connectors.show,
   },
 
 /**
@@ -55,7 +55,7 @@ export default [
     method: 'POST',
     path: '/connectors',
     validators: [connectorValidators.createConnector],
-    handler: controllers.Connectors.createConnector,
+    handler: controllers.Connectors.create,
   },
 
 /**
@@ -86,7 +86,7 @@ export default [
     method: 'PUT',
     path: '/connectors/:connector_id',
     validators: [connectorValidators.updateConnectorByBotId],
-    handler: controllers.Connectors.updateConnectorByBotId,
+    handler: controllers.Connectors.update,
   },
 
   /**
@@ -105,6 +105,6 @@ export default [
     method: 'DELETE',
     path: '/connectors/:connector_id',
     validators: [],
-    handler: controllers.Connectors.deleteConnectorByBotId,
+    handler: controllers.Connectors.delete,
   },
 ]
