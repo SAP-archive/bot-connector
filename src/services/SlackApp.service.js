@@ -35,7 +35,7 @@ export default class SlackAppService extends ServiceTemplate {
   }
 
   static onChannelCreate (channel) {
-    channel.oAuthUrl = `${config.gromit_base_url}/v1/oauth/slack/${channel._id}`
+    channel.oAuthUrl = `${config.base_url}/v1/oauth/slack/${channel._id}`
     channel.save()
   }
 
