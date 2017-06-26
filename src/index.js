@@ -4,7 +4,7 @@ import bodyParser from 'body-parser'
 import _ from 'lodash'
 
 import configs from '../config'
-import { initServices, Logger } from './utils'
+import { Logger } from './utils'
 
 const app = express()
 
@@ -64,7 +64,6 @@ db.on('error', err => {
 // Launch the application
 db.once('open', () => {
   createRouter(app)
-  initServices()
   app.listen(config.server.port, () => {
     app.emit('ready')
     Logger.info(`App is running and listening to port ${config.server.port}`)
