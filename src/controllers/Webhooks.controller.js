@@ -22,12 +22,29 @@ export default class WebhooksController {
       throw new BadRequestError('Type is not defined')
     }
 
-    channel = await invoke(channel.type, 'beforePipeline', [req, res, channel])
-
-    const options = invokeSync(channel.type, 'extractOptions', [req, res, channel])
     invokeSync(channel.type, 'checkSecurity', [req, res, channel])
 
-    await controllers.Messages.pipeMessage(channel._id, req.body, options)
+    channel = await invoke(channel.type, 'beforePipeline', [req, res, channel])
+    const options = invokeSync(channel.type, 'extractOptions', [req, res, channel])
+
+    if (channel.connector.isTyping) {
+      invoke(channel.type, 'sendIsTyping', [channel, options, req.body])
+    }
+
+    const message = await invoke(channel._id, 'getRawMessage', [channel, req, options])
+
+    await controllers.Messages.pipeMessage(channel._id, message, options)
+  }
+
+  static async subscribeWebhhok (req, res) {
+    const { channel_id } = req.params
+    const channel = await global.models.Channel.findByIf(channel_id)
+
+    if (!channel) {
+      throw new NotFoundError('Channel')
+    }
+
+    return invoke(channel.type, 'onWebhookChecking', [req, res, channel])
   }
 
   /**
@@ -57,20 +74,6 @@ export default class WebhooksController {
     }
 
     return conversation
-  }
-
-  // TODO Abstract it!
-  static async subscribeFacebookWebhook (req, res) {
-    const { channel_id } = req.params
-
-    const channel = await models.Channel.findById(channel_id)
-    if (!channel) { throw new NotFoundError('Channel') }
-
-    if (services.messenger.connectWebhook(req, channel)) {
-      res.status(200).send(req.query['hub.challenge'])
-    } else {
-      res.status(403).json({ results: null, message: 'Error while connecting the webhook' })
-    }
   }
 
 }
