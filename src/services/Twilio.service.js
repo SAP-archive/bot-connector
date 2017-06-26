@@ -23,8 +23,6 @@ const agent = superagentPromise(superagent, Promise)
  * parseChannelMessage: ok
  * formatMessage: ok
  * sendMessage: ok
- * formatParticipantData: default
- * getParticipantInfos: default
  */
 
 export default class Twilio extends Template {

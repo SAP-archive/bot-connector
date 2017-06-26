@@ -20,8 +20,6 @@ import { BadRequestError } from '../utils/errors'
  * parseChannelMessage: default
  * formatMessage: ok
  * sendMessage: ok
- * formatParticipantData: default
- * getParticipantInfos: default
  */
 
 export default class Slack extends Template {
@@ -143,32 +141,6 @@ export default class Slack extends Template {
 
       req.end((err) => err ? reject(err) : resolve('Message sent'))
     })
-  }
-
-  static getParticipantInfos (participant, channel) {
-    return new Promise((resolve, reject) => {
-      const token = channel.token
-      const senderId = participant.senderId
-
-      request.get(`http://slack.com/api/users.info?token=${token}&user=${senderId}`)
-        .end((err, res) => {
-          if (err) {
-            Logger.error(`Error when retrieving Slack user info: ${err}`)
-            return reject(err)
-          }
-
-          participant.data = res.body && res.body.user
-          participant.markModified('data')
-
-          participant.save().then(resolve).catch(reject)
-        })
-    })
-  }
-
-  static formatParticipantData (participant) {
-    return participant.data
-      ? { userName: participant.data.real_name }
-      : {}
   }
 
 }

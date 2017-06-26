@@ -22,8 +22,6 @@ const agent = require('superagent-promise')(require('superagent'), Promise)
  * parseChannelMessage: ok
  * formatMessage: ok
  * sendMessage: ok
- * formatParticipantData: ok
- * getParticipantInfos: ok
  */
 
 export default class Messenger extends Template {
@@ -204,39 +202,6 @@ export default class Messenger extends Template {
   static async sendMessage (conversation, message) {
     await agent('POST', `https://graph.facebook.com/v2.6/me/messages?access_token=${conversation.channel.token}`)
       .send(message)
-  }
-
-  /*
-   * Gromit methods
-   */
-
-  static getParticipantInfos (participant, channel) {
-    return new Promise((resolve, reject) => {
-      const fields = 'fields=first_name,last_name,profile_pic,locale,timezone,gender'
-
-      request.get(`https://graph.facebook.com/v2.6/${participant.senderId}?${fields}&access_token=${channel.token}`)
-        .end((err, result) => {
-          if (err) {
-            return reject(err)
-          }
-
-          participant.data = JSON.parse(result.text)
-          participant.markModified('data')
-
-          return participant.save().then(resolve).catch(reject)
-        })
-    })
-  }
-
-  static formatParticipantData (participant) {
-    const informations = {}
-
-    if (participant.data) {
-      const { first_name, last_name } = participant.data
-      informations.userName = `${first_name} ${last_name}`
-    }
-
-    return informations
   }
 
 }

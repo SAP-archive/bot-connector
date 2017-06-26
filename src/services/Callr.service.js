@@ -21,8 +21,6 @@ import { BadRequestError, ForbiddenError } from '../utils/errors'
  * parseChannelMessage: ok
  * formatMessage: ok
  * sendMessage: ok
- * formatParticipantData: default
- * getParticipantInfos: default
  */
 
 export default class Callr extends Template {

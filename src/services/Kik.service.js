@@ -22,8 +22,6 @@ const agent = require('superagent-promise')(require('superagent'), Promise)
  * parseChannelMessage: ok
  * formatMessage: ok
  * sendMessage: ok
- * formatParticipantData: default
- * getParticipantInfos: default
  */
 
 export default class Kik extends Template {
@@ -196,32 +194,4 @@ export default class Kik extends Template {
     }
   }
 
-  static getParticipantInfos (participant, channel) {
-    return new Promise(async (resolve, reject) => {
-      request.get(`https://api.kik.com/v1/user/${participant.senderId}`)
-        .auth(channel.userName, channel.apiKey)
-        .end((err, result) => {
-          if (err) {
-            Logger.error(`Error when retrieving Kik user info: ${err}`)
-            return reject(err)
-          }
-
-          participant.data = result.body
-          participant.markModified('data')
-
-          participant.save().then(resolve).catch(reject)
-        })
-    })
-  }
-
-  static formatParticipantData (participant) {
-    const informations = {}
-
-    if (participant.data) {
-      const { firstName, lastName } = participant.data
-      informations.userName = `${firstName} ${lastName}`
-    }
-
-    return informations
-  }
 }

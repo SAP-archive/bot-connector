@@ -22,8 +22,6 @@ const agent = superagentPromise(superagent, Promise)
  * parseChannelMessage: default
  * formatMessage: ok
  * sendMessage: ok
- * formatParticipantData: default
- * getParticipantInfos: default
  */
 
 export default class SlackAppService extends ServiceTemplate {

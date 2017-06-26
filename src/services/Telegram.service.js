@@ -23,8 +23,6 @@ const agent = superAgentPromise(superAgent, Promise)
  * parseChannelMessage: ok
  * formatMessage: ok
  * sendMessage: ok
- * formatParticipantData: default
- * getParticipantInfos: default
  */
 
 export default class Telegram extends Template {

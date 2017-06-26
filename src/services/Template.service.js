@@ -50,12 +50,4 @@ export default class ServiceTemplate {
   /* Call to send a message to a bot */
   static sendMessage = noop
 
-  /*
-   * Gromit specific methods
-   */
-
-  static formatParticipantData = () => ({})
-
-  static getParticipantInfos = participant => participant
-
 }
