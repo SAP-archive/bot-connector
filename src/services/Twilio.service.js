@@ -1,27 +1,46 @@
 import _ from 'lodash'
 import crypto from 'crypto'
+import superagent from 'superagent'
+import superagentPromise from 'superagent-promise'
 
-import ServiceTemplate from './Template.service'
-import {
-  BadRequestError,
-  ForbiddenError,
-} from '../utils/errors'
+import Template from './Template.service'
+import { BadRequestError, ForbiddenError } from '../utils/errors'
 
-const agent = require('superagent-promise')(require('superagent'), Promise)
+const agent = superagentPromise(superagent, Promise)
 
-export default class TwilioService extends ServiceTemplate {
+/*
+ * checkParamsValidity: ok
+ * onChannelCreate: default
+ * onChannelUpdate: default
+ * onChannelDelete: default
+ * onWebhookChecking: default
+ * checkSecurity: ok
+ * beforePipeline: default
+ * extractOptions: ok
+ * getRawMessage: default
+ * sendIsTyping: default
+ * updateConversationWithMessage: default
+ * parseChannelMessage: ok
+ * formatMessage: ok
+ * sendMessage: ok
+ * formatParticipantData: default
+ * getParticipantInfos: default
+ */
 
-  /* Check parameter validity to create a Channel */
+export default class Twilio extends Template {
+
   static checkParamsValidity (channel) {
-    const { clientId, clientSecret, serviceId } = channel
     channel.phoneNumber = channel.phoneNumber.split(' ').join('')
 
-    if (!clientId) { throw new BadRequestError('Parameter is missing: Client Id') }
-    if (!clientSecret) { throw new BadRequestError('Parameter is missing: Client Secret') }
-    if (!serviceId) { throw new BadRequestError('Parameter is missing: Service Id') }
-    if (!channel.phoneNumber) { throw new BadRequestError('Parameter is missing: Phone Number') }
-
-    return true
+    if (!channel.clientId) {
+      throw new BadRequestError('Parameter is missing: Client Id')
+    } else if (!channel.clientSecret) {
+      throw new BadRequestError('Parameter is missing: Client Secret')
+    } else if (!channel.serviceId) {
+      throw new BadRequestError('Parameter is missing: Service Id')
+    } else if (!channel.phoneNumber) {
+      throw new BadRequestError('Parameter is missing: Phone Number')
+    }
   }
 
   static checkSecurity (req, res, channel) {
@@ -38,13 +57,6 @@ export default class TwilioService extends ServiceTemplate {
     }
   }
 
-  /* Call when a message is received, before the pipeline */
-  static beforePipeline (req, res, channel) {
-    res.status(200).send()
-    return channel
-  }
-
-  /* Call before entering the pipeline, to build the options object */
   static extractOptions (req) {
     const { body } = req
 
@@ -54,80 +66,72 @@ export default class TwilioService extends ServiceTemplate {
     }
   }
 
-  /* Call to parse a message received from a channel */
   static parseChannelMessage (conversation, message, opts) {
     const msg = {
       attachment: {
         type: 'text',
         content: message.Body,
       },
-      channelType: 'twilio',
     }
-    return [conversation, msg, opts]
+
+    return [conversation, msg, { ...opts, mentioned: true }]
   }
 
-  /* Call to format a message received by the bot */
   static formatMessage (conversation, message, opts) {
     const { chatId } = conversation
     const { type, content } = message.attachment
     const to = opts.senderId
+    let body = ''
 
-    const text = () => { return content }
-
-    const quickReplies = () => {
-      if (!content.title || !content.buttons) { throw new BadRequestError('Missing buttons or title for quickReplies type') }
-      return [`${content.title}:`]
-        .concat(content.buttons.map(({ title }) => {
-          if (!title) { throw new BadRequestError('Missing title for quickReplies type') }
-          return title
-        })).join('\r\n')
+    switch (type) {
+    case 'text':
+    case 'picture':
+    case 'video': {
+      body = content
+      break
+    }
+    case 'list': {
+      return _.reduce(content.elements, (acc, elem) => {
+        return `${acc}\r\n${elem.title}\r\n${elem.subtitle}\r\n${elem.imageUrl}`
+      }, '')
+    }
+    case 'quickReplies': {
+      const { title, buttons } = content
+      body = `${title}\r\n`.concat(buttons.map(b => b.title).join('\r\n'))
+      break
+    }
+    case 'card': {
+      const { title, subtitle, imageUrl, buttons } = content
+      body = _.reduce(buttons, (acc, b) => `${acc}\r\n- ${b.title}`, `${title}\r\n${subtitle}\r\n${imageUrl}`)
+      break
+    }
+    case 'carouselle':
+    case 'carousel': {
+      body = _.reduce(content, (acc, card) => {
+        const { title, subtitle, imageUrl, buttons } = card
+        return acc + _.reduce(buttons, (acc, b) => `${acc}\n- ${b.title}`, `${title}\n${subtitle}\n${imageUrl}\n`)
+      }, '')
+      break
+    }
+    default:
+      throw new BadRequestError('Message type non-supported by Twilio')
     }
 
-    const card = () => {
-      if (!content.title || !content.buttons) { throw new BadRequestError('Missing buttons arguments or title for card type') }
-      return [`${content.title}:`]
-        .concat(content.buttons.map(({ title, value }) => {
-          if (!title || !value) { throw new BadRequestError('Missing title for card type') }
-          return `${value} - ${title}`
-        })).join('\r\n')
-    }
-
-    const carouselle = () => {
-      const ret = []
-      _.forEach(content, (card) => {
-        if (!card.title || !card.buttons) { throw new BadRequestError('Missing buttons arguments or title for carouselle type') }
-        if (card.subtitle) { card.title += `\r\n${card.subtitle}` }
-        ret.push([`${card.title}:`]
-          .concat(card.buttons.map(({ title, value }) => {
-            if (!title || !value) { throw new BadRequestError('Missing title for carouselle type') }
-            return `${value} - ${title}`
-          })).join('\r\n'))
-      })
-      return ret.join('\r\n')
-    }
-
-    const fns = { card, text, quickReplies, carouselle }
-    if (fns[type]) { return [{ chatId, to, body: fns[type](), type }] }
-
-    throw new BadRequestError(`Message type ${type} unsupported by Twilio`)
+    return { chatId, to, body, type }
   }
 
-  /* Call to send a message to a bot */
-  static async sendMessage (conversation, messages) {
+  static async sendMessage (conversation, message) {
     const data = {
+      To: message.to,
+      Body: message.body,
       From: conversation.channel.phoneNumber,
       MessagingServiceSid: conversation.channel.serviceId,
-      To: '',
-      Body: '',
     }
-    for (const message of messages) {
-      data.Body = message.body
-      data.To = message.to
-      await agent('POST', `https://api.twilio.com/2010-04-01/Accounts/${conversation.channel.clientId}/Messages.json`)
-        .auth(conversation.channel.clientId, conversation.channel.clientSecret)
-        .type('form')
-        .send(data)
-    }
+
+    await agent('POST', `https://api.twilio.com/2010-04-01/Accounts/${conversation.channel.clientId}/Messages.json`)
+      .auth(conversation.channel.clientId, conversation.channel.clientSecret)
+      .type('form')
+      .send(data)
   }
 
 }

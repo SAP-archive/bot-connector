@@ -1,12 +1,11 @@
 import { noop } from '../utils'
 
+import { BadRequestError } from '../utils/errors'
+
 export default class ServiceTemplate {
 
-  /* Call when the Connector is launched */
-  static onLaunch = noop
-
-  /* Check parameter validity to create a Channel */
-  static checkParamsValidity = noop
+  /* Check parameters validity to create a Channel */
+  static checkParamsValidity = () => true
 
   /* Call when a channel is created */
   static onChannelCreate = noop
@@ -17,14 +16,30 @@ export default class ServiceTemplate {
   /* Call when a channel is deleted */
   static onChannelDelete = noop
 
-  /* Call when a message is received for security purpose */
-  static checkSecurity = noop
+  /* Check webhook validity for certain channels (Messenger) */
+  static onWebhookChecking = () => {
+    throw new BadRequestError('Unimplemented service method')
+  }
 
-  /* Call when a message is received, before the pipeline */
-  static beforePipeline = noop
+  /* Call when a message is received for security purpose */
+  static checkSecurity = (req, res) => {
+    res.status(200).send()
+  }
+
+  /* Perform operations before entering the pipeline */
+  static beforePipeline = (req, res, channel) => channel
 
   /* Call before entering the pipeline, to build the options object */
   static extractOptions = noop
+
+  /* Call to get the raw message from the received request */
+  static getRawMessage = (channel, req) => req.body
+
+  /* Call before entering the pipeline, to send a isTyping message */
+  static sendIsTyping = noop
+
+  /* Call to update a conversation based on data from the message */
+  static updateConversationWithMessage = (conversation, msg, opts) => { return Promise.all([conversation, msg, opts]) }
 
   /* Call to parse a message received from a channel */
   static parseChannelMessage = noop
@@ -34,5 +49,13 @@ export default class ServiceTemplate {
 
   /* Call to send a message to a bot */
   static sendMessage = noop
+
+  /*
+   * Gromit specific methods
+   */
+
+  static formatParticipantData = () => ({})
+
+  static getParticipantInfos = participant => participant
 
 }

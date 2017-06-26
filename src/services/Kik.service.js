@@ -1,18 +1,41 @@
+import _ from 'lodash'
 import request from 'superagent'
 
-import ServiceTemplate from './Template.service'
+import { Logger, arrayfy } from '../utils'
+import Template from './Template.service'
 import { BadRequestError, ForbiddenError } from '../utils/errors'
 
 const agent = require('superagent-promise')(require('superagent'), Promise)
 
-/**
- * Connector's Kik Service
+/*
+ * checkParamsValidity: ok
+ * onChannelCreate: ok
+ * onChannelUpdate: ok
+ * onChannelDelete: default
+ * onWebhookChecking: default
+ * checkSecurity: ok
+ * beforePipeline: default
+ * extractOptions: ok
+ * getRawMessage: default
+ * sendIsTyping: ok
+ * updateConversationWithMessage: default
+ * parseChannelMessage: ok
+ * formatMessage: ok
+ * sendMessage: ok
+ * formatParticipantData: default
+ * getParticipantInfos: default
  */
-export default class KikService extends ServiceTemplate {
 
-  /*
-   * Subscribe webhook
-   */
+export default class Kik extends Template {
+
+  static checkParamsValidity (channel) {
+    if (!channel.apiKey) {
+      throw new BadRequestError('Parameter apiKey is missing')
+    } else if (!channel.userName) {
+      throw new BadRequestError('Parameter userName is missing')
+    }
+  }
+
   static async onChannelCreate (channel) {
     const data = {
       webhook: channel.webhook,
@@ -33,147 +56,172 @@ export default class KikService extends ServiceTemplate {
       })
       channel.isErrored = false
     } catch (err) {
+      Logger.info('[Kik] Cannot set the webhook')
       channel.isErrored = true
     }
   }
 
-  static async onChannelUpdate (channel) {
-    await KikService.onChannelCreate(channel)
-  }
+  static onChannelUpdate = Kik.onChannelCreate
 
-  /**
-   * Check if the message come from a valid webhook
-   */
   static checkSecurity (req, res, channel) {
-    if (`${config.base_url}/webhook/${channel._id}` !== channel.webhook || req.headers['x-kik-username'] !== channel.userName) {
+    if (`https://${req.headers.host}/connect/v1/webhook/${channel._id}` !== channel.webhook || req.headers['x-kik-username'] !== channel.userName) {
       throw new ForbiddenError()
     }
+
     res.status(200).send()
   }
 
-  /**
-   * Check if any params is missing
-   */
-  static checkParamsValidity (channel) {
-    const { userName, apiKey } = channel
-
-    if (!apiKey) { throw new BadRequestError('Parameter apiKey is missing') }
-    if (!userName) { throw new BadRequestError('Parameter userName is missing') }
-
-    return true
-  }
-
-  /**
-   * Extract information from the request before the pipeline
-   */
   static extractOptions (req) {
-    const { body } = req
-
     return {
-      chatId: body.messages[0].chatId,
-      senderId: body.messages[0].participants[0],
+      chatId: _.get(req, 'body.messages[0].chatId'),
+      senderId: _.get(req, 'body.messages[0].participants[0]'),
     }
   }
 
-  /**
-   * send 200 to kik to stop pipeline
-   */
-  static async beforePipeline (req, res, channel) {
-    return channel
+  static async sendIsTyping (channel, options) {
+    const message = {
+      to: options.senderId,
+      chatId: options.chatId,
+      type: 'is-typing',
+      isTyping: true,
+    }
+
+    return agent('POST', 'https://api.kik.com/v1/message')
+      .auth(channel.userName, channel.apiKey)
+      .send({ messages: [message] })
   }
 
-  /**
-   * Parse the message to the connector format
-   */
   static parseChannelMessage (conversation, message, opts) {
-    const firtsMessage = message.messages[0]
-    const msg = {
-      attachment: {},
-      channelType: 'kik',
-    }
+    message = _.get(message, 'messages[0]', {})
+    const msg = { attachment: {}, channelType: 'kik' }
 
-    switch (firtsMessage.type) {
+    switch (message.type) {
     case 'text':
-      msg.attachment = { type: 'text', content: firtsMessage.body }
+      msg.attachment = { type: 'text', content: message.body }
       break
     case 'link':
-      msg.attachment = { type: 'link', content: firtsMessage.url }
+      msg.attachment = { type: 'link', content: message.url }
       break
     case 'picture':
-      msg.attachment = { type: 'picture', content: firtsMessage.picUrl }
+      msg.attachment = { type: 'picture', content: message.picUrl }
       break
     case 'video':
-      msg.attachment = { type: 'video', content: firtsMessage.videoUrl }
+      msg.attachment = { type: 'video', content: message.videoUrl }
       break
     default:
-      throw new BadRequestError('Format not supported')
+      throw new BadRequestError('Message non-supported by Kik')
     }
-    return [conversation, msg, opts]
+
+    return [conversation, msg, { ...opts, mentioned: true }]
   }
 
-  /**
-   * Parse the message to the Connector format
-   */
   static formatMessage (conversation, message, opts) {
-    const reply = []
-    let keyboards = null
+    const content = _.get(message, 'attachment.content')
+    const type = _.get(message, 'attachment.type')
+    const msg = { chatId: opts.chatId, to: opts.senderId, type }
 
-    if (message.attachment.type === 'text') {
-      reply.push({ type: message.attachment.type, chatId: opts.chatId, to: opts.senderId, body: message.attachment.content })
-
-    } else if (message.attachment.type === 'picture') {
-      reply.push({ type: message.attachment.type, chatId: opts.chatId, to: opts.senderId, picUrl: message.attachment.content })
-
-    } else if (message.attachment.type === 'video') {
-      reply.push({ type: message.attachment.type, chatId: opts.chatId, to: opts.senderId, videoUrl: message.attachment.content })
-
-    } else if (message.attachment.type === 'quickReplies') {
-      keyboards = [{ type: 'suggested' }]
-      keyboards[0].responses = message.attachment.content.buttons.map(button => ({ type: 'text', body: button.title }))
-      reply.push({ type: 'text', chatId: opts.chatId, to: opts.senderId, body: message.attachment.content.title, keyboards })
-
-    } else if (message.attachment.type === 'card') {
-      if (message.attachment.content.buttons && message.attachment.content.buttons.length) {
-        keyboards = [{ type: 'suggested', responses: [] }]
-        message.attachment.content.buttons.forEach(button => {
-          if (button.type !== 'element_share') { keyboards[0].responses.push({ type: 'text', body: button.value }) }
-        })
-      }
-      if (message.attachment.content.title) {
-        reply.push({ type: 'text', chatId: opts.chatId, to: opts.senderId, body: message.attachment.content.title })
-      }
-      if (message.attachment.content.imageUrl) {
-        reply.push({ type: 'picture', chatId: opts.chatId, to: opts.senderId, picUrl: message.attachment.content.imageUrl })
-      }
-      reply[reply.length - 1].keyboards = keyboards
-    } else if (message.attachment.type === 'carouselle') {
-      if (message.attachment.content && message.attachment.content.length) {
-        keyboards = [{ type: 'suggested' }]
-        keyboards[0].responses = message.attachment.content.map(c => ({ type: 'text', body: c.buttons[0].value }))
-      }
-      message.attachment.content.forEach(c => {
-
-        if (c.title) {
-          reply.push({ type: 'text', chatId: opts.chatId, to: opts.senderId, body: c.buttons[0].title })
-        }
-        if (c.imageUrl) {
-          reply.push({ type: 'picture', chatId: opts.chatId, to: opts.senderId, picUrl: c.imageUrl })
+    switch (type) {
+    case 'text':
+      return { ...msg, body: content }
+    case 'picture':
+      return { ...msg, picUrl: content }
+    case 'video':
+      return { ...msg, videoUrl: content }
+    case 'list': {
+      const replies = content.elements.map(elem => {
+        return {
+          ...msg,
+          type: 'text',
+          body: `\n${elem.title}\n${elem.subtitle}\n${elem.imageUrl}`,
         }
       })
-      reply[reply.length - 1].keyboards = keyboards
-    }
 
-    return reply
+      replies[replies.length - 1].keyboards = [{
+        type: 'suggested',
+        responses: content.buttons.map(b => ({ type: 'text', body: b.title })),
+      }]
+      return replies
+    }
+    case 'quickReplies': {
+      return {
+        ...msg,
+        type: 'text',
+        body: content.title,
+        keyboards: [{
+          type: 'suggested',
+          responses: content.buttons.map(b => ({ type: 'text', body: b.title })),
+        }],
+      }
+    }
+    case 'card': {
+      const replies = []
+      const keyboard = { type: 'suggested' }
+      keyboard.responses = content.buttons.map(b => ({ type: 'text', body: b.title }))
+      replies.push({ ...msg, type: 'text', body: content.title })
+
+      if (content.imageUrl) {
+        replies.push({ ...msg, type: 'picture', picUrl: content.imageUrl })
+      }
+
+      replies[replies.length - 1].keyboards = [keyboard]
+      return replies
+    }
+    case 'carousel':
+    case 'carouselle': {
+      const replies = []
+      const keyboard = { type: 'suggested' }
+      keyboard.responses = [].concat.apply([], content.map(c => c.buttons)).map(b => ({ type: 'text', body: b.title }))
+
+      for (const card of content) {
+        replies.push({ ...msg, type: 'text', body: card.title })
+
+        if (card.imageUrl) {
+          replies.push({ ...msg, type: 'picture', picUrl: card.imageUrl })
+        }
+      }
+
+      replies[replies.length - 1].keyboards = [keyboard]
+      return replies
+    }
+    default:
+      throw new BadRequestError('Message type non-supported by Kik')
+    }
   }
 
- /**
-  * Send the message to kik
-  */
   static async sendMessage (conversation, messages) {
-    for (const message of messages) {
+    for (const message of arrayfy(messages)) {
       await agent('POST', 'https://api.kik.com/v1/message')
         .auth(conversation.channel.userName, conversation.channel.apiKey)
         .send({ messages: [message] })
     }
+  }
+
+  static getParticipantInfos (participant, channel) {
+    return new Promise(async (resolve, reject) => {
+      request.get(`https://api.kik.com/v1/user/${participant.senderId}`)
+        .auth(channel.userName, channel.apiKey)
+        .end((err, result) => {
+          if (err) {
+            Logger.error(`Error when retrieving Kik user info: ${err}`)
+            return reject(err)
+          }
+
+          participant.data = result.body
+          participant.markModified('data')
+
+          participant.save().then(resolve).catch(reject)
+        })
+    })
+  }
+
+  static formatParticipantData (participant) {
+    const informations = {}
+
+    if (participant.data) {
+      const { firstName, lastName } = participant.data
+      informations.userName = `${firstName} ${lastName}`
+    }
+
+    return informations
   }
 }
