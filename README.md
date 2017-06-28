@@ -115,66 +115,122 @@ To send a new message, you have to post it to Bot Connector's API
 All messages coming from the bot are parsed and modified to match the destination channel specifications.
 Bot Connector supports several message formats:
 
-* Text message:
+* Text
 
-```javascript
-[{
+```js
+{
   type: 'text',
-  content: 'My text message',
-}]
+  content: 'MY_TEXT',
+}
 ```
-* Quick Replies:
 
-```javascript
-[{
+* Picture
+
+```js
+{
+  type: 'picture',
+  content: 'IMAGE_URL',
+}
+```
+
+* Video
+
+```js
+{
+  type: 'video',
+  content: 'VIDEO_URL',
+}
+```
+
+* Quick Replies
+
+```js
+{
   type: 'quickReplies',
   content: {
-    title: 'My title',
+    title: 'TITLE',
     buttons: [
       {
-        title: 'Button title',
-        value: 'Button value',
-      },
+        title: 'BUTTON_1_TITLE',
+        value: 'BUTTON_1_VALUE',
+      }, {
+        title: 'BUTTON_2_TITLE',
+        value: 'BUTTON_2_VALUE',
+      }
     ]
   }
-}]
+}
 ```
 
-* Cards:
-
-```javascript
-[{
-  type: 'card',
+* List
+```js
+{
+  type: 'list',
   content: {
-    title: 'My card title',
-    imageUrl: 'url_to_my_image',
-    subtitle: 'My card subtitle',
+    elements: [
+      {
+        title: 'ELEM_1_TITLE',
+        imageUrl: 'IMAGE_URL',
+        subtitle: 'ELEM_1_SUBTITLE',
+        buttons: [
+          {
+            title: 'BUTTON_1_TITLE',
+            value: 'BUTTON_1_VALUE',
+            type: 'BUTTON_TYPE',
+          }
+        ]
+      }
+    ],
     buttons: [
       {
-        title: 'My button title',
-        type: 'My button type', // See Facebook Messenger button formats
-        value: 'My button value',
+        title: 'BUTTON_1_TITLE',
+        value: 'BUTTON_1_VALUE',
+        type: 'BUTTON_TYPE',
+      }
+    ]
+  }
+}
+```
+
+* Card
+
+```js
+{
+  type: 'card',
+  content: {
+    title: 'CARD_TITLE',
+    subtitle: 'CARD_SUBTITLE',
+    imageUrl: 'IMAGE_URL',
+    buttons: [
+      {
+        title: 'BUTTON_TITLE',
+        type: 'BUTTON_TYPE', // See Facebook Messenger button formats
+        value: 'BUTTON_VALUE',
       }
     ],
   },
-}]
+}
 ```
 
-* Pictures:
+* Carousel
 
-```javascript
-[{
-  type: 'picture',
-  content: 'url_to_my_image',
-}]
-```
-* Videos:
-
-```javascript
-[{
-  type: 'video',
-  content: 'url_to_my_video',
-}]
+```js
+{
+  type: 'carousel',
+  content: [
+    {
+      title: 'CARD_1_TITLE',
+      imageUrl: 'IMAGE_URL',
+      buttons: [
+        {
+          title: 'BUTTON_1_TITLE',
+          value: 'BUTTON_1_VALUE',
+          type: 'BUTTON_1_TYPE', 
+        }  
+      ]
+    }
+  ],
+}
 ```
 
 ### Issue
