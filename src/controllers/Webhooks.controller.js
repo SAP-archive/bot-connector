@@ -22,7 +22,7 @@ export default class WebhooksController {
       throw new BadRequestError('Type is not defined')
     }
 
-    invokeSync(channel.type, 'checkSecurity', [req, res, channel])
+    await invoke(channel.type, 'checkSecurity', [req, res, channel])
 
     channel = await invoke(channel.type, 'beforePipeline', [req, res, channel])
     const options = invokeSync(channel.type, 'extractOptions', [req, res, channel])
@@ -31,14 +31,14 @@ export default class WebhooksController {
       invoke(channel.type, 'sendIsTyping', [channel, options, req.body])
     }
 
-    const message = await invoke(channel._id, 'getRawMessage', [channel, req, options])
+    const message = await invoke(channel.type, 'getRawMessage', [channel, req, options])
 
     await controllers.Messages.pipeMessage(channel._id, message, options)
   }
 
-  static async subscribeWebhhok (req, res) {
+  static async subscribeWebhook (req, res) {
     const { channel_id } = req.params
-    const channel = await global.models.Channel.findByIf(channel_id)
+    const channel = await global.models.Channel.findById(channel_id)
 
     if (!channel) {
       throw new NotFoundError('Channel')

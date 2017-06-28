@@ -183,7 +183,6 @@ export default class MessagesController {
     }
   }
 
-
   static async broadcastMessage (req, res) {
     const { connector_id } = req.params
     let { messages } = req.body

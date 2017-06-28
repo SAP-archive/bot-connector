@@ -6,7 +6,7 @@ export default class ParticipantController {
   /*
   * Index all connector's participants
   */
-  static async getParticipantsByConnectorId (req, res) {
+  static async index (req, res) {
     const { connector_id } = req.params
     const results = []
 
@@ -25,7 +25,7 @@ export default class ParticipantController {
   /*
   * Show a participant
   */
-  static async getParticipantByConnectorId (req, res) {
+  static async show (req, res) {
     const { participant_id } = req.params
 
     const participant = await models.Participant.findById(participant_id)

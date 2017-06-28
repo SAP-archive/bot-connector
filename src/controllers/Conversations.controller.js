@@ -1,6 +1,3 @@
-import _ from 'lodash'
-
-import { Logger } from '../utils'
 import { renderOk, renderDeleted } from '../utils/responses'
 import { NotFoundError, BadRequestError } from '../utils/errors'
 
@@ -9,7 +6,7 @@ export default class ConversationController {
   static async index (req, res) {
     const { connector_id } = req.params
 
-    const conversations = models.Conversation.find({ connector: connector_id })
+    const conversations = await models.Conversation.find({ connector: connector_id })
 
     return renderOk(res, {
       results: conversations.map(c => c.serialize),
@@ -18,9 +15,9 @@ export default class ConversationController {
   }
 
   static async show (req, res) {
-    const { connector_id, conversation_id } = req.params
+    const { conversation_id, connector_id } = req.params
 
-    const conversation = await global.models.Conversation.findOne({ _id: conversation_id, connector: connector._id })
+    const conversation = await global.models.Conversation.findOne({ _id: conversation_id, connector: connector_id })
       .populate('participants messages')
 
     if (!conversation) {
@@ -36,7 +33,7 @@ export default class ConversationController {
   static async delete (req, res) {
     const { connector_id, conversation_id } = req.params
 
-    const conversations = await global.models.Conversation.findOne({ _id: conversation_id, connector: connector_id })
+    const conversation = await global.models.Conversation.findOne({ _id: conversation_id, connector: connector_id })
 
     if (!conversation) {
       throw new NotFoundError('Conversation')

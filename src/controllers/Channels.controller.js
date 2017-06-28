@@ -28,7 +28,7 @@ export default class ChannelsController {
     }
 
     const channel = await global.models.Channel({ ...params, connector: connector._id })
-    channel.webhook = `${global.config.gromit_base_url}/v1/webhook/${channel._id}`
+    channel.webhook = `${global.config.base_url}/webhook/${channel._id}`
     connector.channels.push(channel)
 
     await Promise.all([
