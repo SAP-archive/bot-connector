@@ -34,12 +34,14 @@ You can find more information on each channel in the [wiki](https://github.com/R
 More will be added, and you can [contribute](https://github.com/RecastAI/bot-connector/blob/master/CONTRIBUTING.md) if you want to, and add a thumbs up for the channel you want to see implemented first ;)
 (To do so, fork this repo, add a thumbs up and make a PR!)
 
-* Discord 👍
+
+* Discord 👍👍
 * Line 👍
 * Ryver 👍
 * Viber
-* Wechat 👍
+* Wechat 👍👍
 * Zinc.it 👍
+* Salesforce 
 
 You can find the current roadmap [here](https://github.com/RecastAI/bot-connector/projects/1).
 
