@@ -23,14 +23,11 @@ export default class ChannelsController {
 
     if (!connector) {
       throw new NotFoundError('Connector')
-    }
-
-    const channel = connector.channels.find(c => c.slug === slug)
-
-    if (channel) {
+    } else if (connector.channels.find(c => c.slug === slug)) {
       throw new ConflictError('Channel slug is already taken')
     }
 
+    const channel = await global.models.Channel({ ...params, connector: connector._id })
     channel.webhook = `${global.config.gromit_base_url}/v1/webhook/${channel._id}`
     connector.channels.push(channel)
 
@@ -72,7 +69,7 @@ export default class ChannelsController {
   static async show (req, res) {
     const { connector_id, channel_slug } = req.params
 
-    const channel = models.Channel.findOne({ slug: channel_slug, connector: connector_id })
+    const channel = await models.Channel.findOne({ slug: channel_slug, connector: connector_id })
       .populate('children')
 
     if (!channel) {
@@ -93,7 +90,7 @@ export default class ChannelsController {
 
     const oldChannel = await global.models.Channel.findOne({ slug: channel_slug, connector: connector_id })
     const channel = await global.models.Channel.findOneAndUpdate(
-      { slug: channel_slug, connector: connector._id, isActive: true },
+      { slug: channel_slug, connector: connector_id },
       { $set: filter(req.body, permittedUpdate) },
       { new: true }
     )

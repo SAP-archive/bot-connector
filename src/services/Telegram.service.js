@@ -4,7 +4,7 @@ import superAgentPromise from 'superagent-promise'
 
 import { Logger } from '../utils'
 import Template from './Template.service'
-import { ValidationError, BadRequestError } from '../utils/errors'
+import { BadRequestError } from '../utils/errors'
 
 const agent = superAgentPromise(superAgent, Promise)
 
@@ -29,7 +29,7 @@ export default class Telegram extends Template {
 
   static checkParamsValidity (channel) {
     if (!channel.token) {
-      throw new ValidationError('token', 'missing')
+      throw new BadRequestError('token', 'missing')
     }
   }
 
