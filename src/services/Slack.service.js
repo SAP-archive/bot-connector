@@ -1,133 +1,146 @@
+import _ from 'lodash'
 import request from 'superagent'
 
-import ServiceTemplate from './Template.service'
 import Logger from '../utils/Logger'
-import { BadRequestError, ConnectorError } from '../utils/errors'
+import Template from './Template.service'
+import { BadRequestError } from '../utils/errors'
 
-export default class SlackService extends ServiceTemplate {
+/*
+ * checkParamsValidity: ok
+ * onChannelCreate: default
+ * onChannelUpdate: default
+ * onChannelDelete: default
+ * onWebhookChecking: default
+ * checkSecurity: default
+ * beforePipeline: default
+ * extractOptions: ok
+ * getRawMessage: default
+ * sendIsTyping: default
+ * updateConversationWithMessage: default
+ * parseChannelMessage: default
+ * formatMessage: ok
+ * sendMessage: ok
+ */
+
+export default class Slack extends Template {
 
   static extractOptions (req) {
-    const { body } = req
-
     return {
-      chatId: body.event.channel,
-      senderId: body.event.user,
+      chatId: _.get(req, 'body.event.channel'),
+      senderId: _.get(req, 'body.event.user'),
     }
-  }
-
-  static checkSecurity (req, res) {
-    res.status(200).send()
   }
 
   static checkParamsValidity (channel) {
-    const { token } = channel
-
-    if (!token) { throw new BadRequestError('Parameter token is missing') }
-
-    return true
+    if (!channel.token) {
+      throw new BadRequestError('Parameter token is missing')
+    }
   }
 
-  /**
-   * Parse the message received by Slack to connector format
-   */
   static parseChannelMessage (conversation, message, opts) {
-    return new Promise((resolve, reject) => {
-      const parsedMessage = {
-        channelType: 'slack',
-      }
-      let attachment = {}
-      if (message.event.file) {
-        if (message.event.file.mimetype.startsWith('image')) {
-          attachment = { type: 'picture', content: message.event.file.url_private }
-        } else if (message.event.file.mimetype.startsWith('video')) {
-          attachment = { type: 'picture', content: message.event.file.url_private }
-        } else {
-          return reject(new ConnectorError('Sorry but we don\'t handle such type of file'))
-        }
-      } else {
-        attachment = { type: 'text', content: message.event.text }
-      }
-      parsedMessage.attachment = attachment
-      return resolve([conversation, parsedMessage, opts])
-    })
+    const msg = { attachment: {} }
+    const file = _.get(message, 'event.file', { mimetype: '' })
+
+    opts.mentioned = _.get(message, 'event.channel', '').startsWith('D')
+      || _.get(message, 'event.text', '').includes(`<@${conversation.channel.botuser}>`)
+
+    Logger.inspect(message)
+
+    if (file.mimetype.startsWith('image')) {
+      _.set(msg, 'attachment', { type: 'picture', content: file.url_private })
+    } else if (file.mimetype.startsWith('video')) {
+      _.set(msg, 'attachment', { type: 'picture', content: file.url_private })
+    } else if (message.event && message.event.text) {
+      _.set(msg, 'attachment', { type: 'text', content: message.event.text.replace(`<@${conversation.channel.botuser}>`, '') })
+    } else {
+      throw new BadRequestError('Message type non-supported by Slack')
+    }
+
+    return [conversation, msg, opts]
   }
 
-    // Transforms a message from connector universal format to slack format
   static formatMessage (conversation, message) {
-    const { type, content } = message.attachment
-    let slackFormattedMessage = null
+    const type = _.get(message, 'attachment.type')
+    const content = _.get(message, 'attachment.content')
+
     switch (type) {
     case 'text':
-      slackFormattedMessage = { text: content }
-      break
     case 'video':
-      slackFormattedMessage = { text: content }
-      break
-    case 'picture':
-      slackFormattedMessage = { text: content }
-      break
-    case 'quickReplies':
-      slackFormattedMessage = {
-        text: content.title,
-      }
-      slackFormattedMessage.attachments = [{
-        fallback: 'Sorry but I can\'t display buttons',
-        attachment_type: 'default',
-        callback_id: 'callback_id',
-        actions: content.buttons.map(button => {
-          button.name = button.title
-          button.text = button.title
-          button.type = 'button'
-          delete button.title
-          return button
-        }),
-      }]
-      break
-    case 'card':
-      slackFormattedMessage = {}
-      slackFormattedMessage.attachments = [{
-        title: content.title,
-        text: content.subtitle,
-        image_url: content.imageUrl,
-        fallback: 'Sorry but I can\'t display buttons',
-        attachment_type: 'default',
-        callback_id: 'callback_id',
-        actions: content.buttons.map(button => {
-          button.name = button.title
-          button.text = button.title
-          button.type = 'button'
-          delete button.title
-          return button
-        }),
-      }]
-      break
-    default:
-      throw new Error('Invalid message type')
+    case 'picture': {
+      return { text: content }
     }
-    return slackFormattedMessage
+    case 'list': {
+      return {
+        attachments: content.elements.map(e => ({
+          color: '#3AA3E3',
+          title: e.title,
+          text: e.subtitle,
+          image_url: e.imageUrl,
+          attachment_type: 'default',
+          callback_id: 'callback_id',
+          actions: e.buttons.map(({ title, value }) => ({ name: title, text: title, type: 'button', value })),
+        })),
+      }
+    }
+    case 'quickReplies': {
+      const { title, buttons } = content
+      return {
+        text: title,
+        attachments: [{
+          fallback: title,
+          color: '#3AA3E3',
+          attachemnt_type: 'default',
+          callback_id: 'callback_id',
+          actions: buttons.map(({ title, value }) => ({ name: title, text: title, type: 'button', value })),
+        }],
+      }
+    }
+    case 'card': {
+      return {
+        attachments: [{
+          color: '#7CD197',
+          title: content.title,
+          text: content.subtitle,
+          image_url: content.imageUrl,
+          fallback: content.title,
+          attachment_type: 'default',
+          callback_id: 'callback_id',
+          actions: content.buttons.map(({ title, value }) => ({ name: title, text: title, type: 'button', value })),
+        }],
+      }
+    }
+    case 'carousel':
+    case 'carouselle':
+      return {
+        attachments: content.map(card => ({
+          color: '#F35A00',
+          title: card.title,
+          image_url: card.imageUrl,
+          attachment_type: 'default',
+          callback_id: 'callback_id',
+          actions: card.buttons.map(({ title, value }) => ({ name: title, text: title, type: 'button', value })),
+        })),
+      }
+    default:
+      throw new BadRequestError('Message type non-supported by Slack')
+    }
   }
 
-  /**
-   * Send a message to the Bot
-   */
   static sendMessage (conversation, message) {
     return new Promise((resolve, reject) => {
-      const authParams = `token=${conversation.channel.token}&channel=${conversation.chatId}&as_user=true`
-      let params = ''
+      const req = request.post('https://slack.com/api/chat.postMessage')
+        .query({ token: conversation.channel.token, channel: conversation.chatId, as_user: true })
+
       if (message.text) {
-        params = `&text=${message.text}`
+        req.query({ text: message.text })
       }
+
       if (message.attachments) {
-        params = `${params}&attachments=${JSON.stringify(message.attachments)}`
+        req.query({ attachments: JSON.stringify(message.attachments) })
       }
-      request.post(`https://slack.com/api/chat.postMessage?${authParams}${params}`)
-      .end((err) => {
-        if (err) {
-          Logger.error('Error while sending message to slack')
-          return reject(err)
-        }
-        resolve('Message sent')
-      })
+
+      req.end((err) => err ? reject(err) : resolve('Message sent'))
     })
   }
+
 }

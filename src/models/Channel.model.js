@@ -13,8 +13,13 @@ const ChannelSchema = new mongoose.Schema({
   isActivated: { type: Boolean, required: true, default: true },
 
   token: String,
+  clientAppId: String,
   clientId: String,
   clientSecret: String,
+  consumerKey: String,
+  consumerSecret: String,
+  accessToken: String,
+  accessTokenSecret: String,
   botuser: String,
   userName: String,
   password: String,

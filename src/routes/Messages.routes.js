@@ -108,6 +108,6 @@ export default [
     method: 'POST',
     path: '/connectors/:connector_id/messages',
     validators: [],
-    handler: controllers.Messages.postMessages,
+    handler: controllers.Messages.broadcastMessage,
   },
 ]

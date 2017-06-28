@@ -1,9 +1,7 @@
-class AppController {
+export default class AppController {
 
-  static index (req, res) {
-    res.status(200).send('Hi!')
+  static async index (req, res) {
+    return res.status(200).send('Hi!')
   }
 
 }
-
-module.exports = AppController

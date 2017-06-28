@@ -6,6 +6,7 @@ const ConnectorSchema = new mongoose.Schema({
   url: { type: String, required: true },
   channels: [{ type: String, ref: 'Channel' }],
   conversations: [{ type: String, ref: 'Conversation' }],
+  isTyping: { type: Boolean, required: true, default: true },
 }, {
   usePushEach: true,
   timestamps: true,
@@ -27,6 +28,7 @@ ConnectorSchema.virtual('serialize').get(function () {
   return {
     id: this._id,
     url: this.url,
+    isTyping: this.isTyping,
     conversations: this.conversations,
     channels: this.channels.map(c => c.serialize || c),
   }

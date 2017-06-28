@@ -1,39 +1,37 @@
-import Logger from '../utils/Logger'
-import { invoke, invokeSync } from '../utils'
-import { isValidFormatMessage } from '../utils/format'
-import { NotFoundError, BadRequestError, ServiceError } from '../utils/errors'
-import { renderCreated } from '../utils/responses'
 import _ from 'lodash'
 
-class MessagesController {
+import Logger from '../utils/Logger'
+import { invoke, invokeSync } from '../utils'
+import { renderCreated } from '../utils/responses'
+import { isValidFormatMessage } from '../utils/format'
+import { NotFoundError, BadRequestError, ServiceError } from '../utils/errors'
+
+export default class MessagesController {
 
   static async pipeMessage (id, message, options) {
-    return controllers.Conversations.findOrCreateConversation(id, options.chatId)
-      .then(conversation => controllers.Messages.parseChannelMessage(conversation, message, options))
-      .then(controllers.Messages.saveMessage)
-      .then(controllers.Webhooks.sendMessageToBot)
+    return global.controllers.Conversations.findOrCreateConversation(id, options.chatId)
+      .then(conversation => global.controllers.Messages.updateConversationWithMessage(conversation, message, options))
+      .then(global.controllers.Messages.parseChannelMessage)
+      .then(global.controllers.Messages.saveMessage)
+      .then(global.controllers.Webhooks.sendMessageToBot)
   }
 
-  /**
-   * Parse a message received
-   * from a channel to the BC format
-   */
-  static parseChannelMessage (conversation, message, options) {
+  static parseChannelMessage ([conversation, message, options]) {
     return invoke(conversation.channel.type, 'parseChannelMessage', [conversation, message, options])
   }
 
-  /* Save a message in db and create the participant if necessary */
   static async saveMessage ([conversation, message, options]) {
     let participant = _.find(conversation.participants, p => p.senderId === options.senderId)
+    const type = conversation.channel.type
 
     if (!participant) {
-      participant = await new models.Participant({ senderId: options.senderId }).save()
+      participant = await new global.models.Participant({ senderId: options.senderId }).save()
 
-      await models.Conversation.update({ _id: conversation._id }, { $push: { participants: participant._id } })
+      await global.models.Conversation.update({ _id: conversation._id }, { $push: { participants: participant._id } })
       conversation.participants.push(participant)
     }
 
-    const newMessage = new models.Message({
+    const newMessage = new global.models.Message({
       participant: participant._id,
       conversation: conversation._id,
       attachment: message.attachment,
@@ -45,7 +43,7 @@ class MessagesController {
       conversation,
       newMessage.save(),
       options,
-      models.Conversation.update({ _id: conversation._id }, { $push: { messages: newMessage._id } }),
+      global.models.Conversation.update({ _id: conversation._id }, { $push: { messages: newMessage._id } }),
     ])
   }
 
@@ -71,13 +69,14 @@ class MessagesController {
    */
   static async bulkSaveMessages ([conversation, messages, opts]) {
     let participant = _.find(conversation.participants, p => p.isBot)
+
     if (!participant) {
-      participant = await new models.Participant({ senderId: conversation.connector._id, isBot: true }).save()
+      participant = await new global.models.Participant({ senderId: conversation.connector._id, isBot: true }).save()
       conversation.participants.push(participant)
     }
 
     messages = await Promise.all(messages.map(attachment => {
-      const newMessage = new models.Message({
+      const newMessage = new global.models.Message({
         participant: participant._id,
         conversation: conversation._id,
         attachment,
@@ -96,13 +95,20 @@ class MessagesController {
   /**
    * Format an array of messages
    */
-  static bulkFormatMessages ([conversation, messages, options]) {
+  static async bulkFormatMessages ([conversation, messages, options]) {
     const channelType = conversation.channel.type
 
     messages = messages
       .filter(message => !message.attachment.only || message.attachment.only.indexOf(channelType) !== -1)
-      .map(message => invokeSync(channelType, 'formatMessage', [conversation, message, options]))
 
+    messages = await Promise.all(messages
+      .map(async (message) => {
+        const res = await invoke(channelType, 'formatMessage', [conversation, message, options])
+        return Array.isArray(res) ? res : [res]
+      }))
+
+    // flattening
+    messages = [].concat.apply([], messages)
     return Promise.resolve([conversation, messages, options])
   }
 
@@ -113,29 +119,16 @@ class MessagesController {
     const channelType = conversation.channel.type
 
     for (const message of messages) {
-      let err = null
-
-      // Try 3 times to send the message
-      for (let i = 0; i < 3; i++) {
-        try {
-          await invoke(channelType, 'sendMessage', [conversation, message, opts])
-          break
-        } catch (ex) {
-          // Wait 2000ms before trying to send the message again
-          await new Promise(resolve => setTimeout(resolve, 2000))
-          err = ex
-        }
+      try {
+        await invoke(channelType, 'sendMessage', [conversation, message, opts])
+      } catch (err) {
+        throw new ServiceError('Error while sending message', err)
       }
-
-      if (err) { throw new ServiceError('Error while sending message', err) }
     }
 
     return ([conversation, messages, opts])
   }
 
-  /**
-   * Post from a bot to a channel
-   */
   static async postMessage (req, res) {
     const { connector_id, conversation_id } = req.params
     let { messages } = req.body
@@ -150,8 +143,10 @@ class MessagesController {
       }
     }
 
-    const conversation = await models.Conversation.findOne({ _id: conversation_id, connector: connector_id })
+    const conversation = await global.models.Conversation.findOne({ _id: conversation_id, connector: connector_id })
           .populate('participants channel connector').exec()
+
+    if (!conversation) { throw new NotFoundError('Conversation') }
 
     const participant = conversation.participants.find(p => !p.isBot)
     if (!participant) { throw new NotFoundError('Participant') }
@@ -161,10 +156,10 @@ class MessagesController {
       chatId: conversation.chatId,
     }
 
-    await controllers.Messages.bulkCheckMessages([conversation, messages, opts])
-      .then(controllers.Messages.bulkSaveMessages)
-      .then(controllers.Messages.bulkFormatMessages)
-      .then(controllers.Messages.bulkSendMessages)
+    await global.controllers.Messages.bulkCheckMessages([conversation, messages, opts])
+      .then(global.controllers.Messages.bulkSaveMessages)
+      .then(global.controllers.Messages.bulkFormatMessages)
+      .then(global.controllers.Messages.bulkSendMessages)
 
     return renderCreated(res, { results: null, message: 'Messages successfully posted' })
   }
@@ -188,10 +183,7 @@ class MessagesController {
     }
   }
 
-  /**
-   * Post message to a bot
-   */
-  static async postMessages (req, res) {
+  static async broadcastMessage (req, res) {
     const { connector_id } = req.params
     let { messages } = req.body
 
@@ -207,17 +199,27 @@ class MessagesController {
 
     const connector = await models.Connector.findById(connector_id).populate('conversations')
 
-    if (!connector) { throw new NotFoundError('Connector') }
+    if (!connector) {
+      throw new NotFoundError('Connector')
+    }
 
     for (const conversation of connector.conversations) {
       try {
-        await controllers.Messages.postToConversation(conversation, messages)
+        await global.controllers.Messages.postToConversation(conversation, messages)
       } catch (err) {
         Logger.error('Error while broadcasting message', err)
       }
     }
-    renderCreated(res, { results: null, message: 'Messages successfully posted' })
-  }
-}
 
-module.exports = MessagesController
+    return renderCreated(res, { results: null, message: 'Messages successfully posted' })
+  }
+
+  /*
+   * Helpers
+   */
+
+  static async updateConversationWithMessage (conversation, message, options) {
+    return invoke(conversation.channel.type, 'updateConversationWithMessage', [conversation, message, options])
+  }
+
+}

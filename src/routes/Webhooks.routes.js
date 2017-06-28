@@ -21,6 +21,6 @@ export default [
     method: 'GET',
     path: '/webhook/:channel_id',
     validators: [],
-    handler: controllers.Webhooks.subscribeFacebookWebhook,
+    handler: controllers.Webhooks.subscribeWebhook,
   },
 ]

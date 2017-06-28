@@ -24,22 +24,23 @@ Bot Connector supports the following channels:
 * [Callr](https://github.com/RecastAI/bot-connector/wiki/Channel-CALLR)
 * [Telegram](https://github.com/RecastAI/bot-connector/wiki/Channel-Telegram)
 * [Twilio](https://github.com/RecastAI/bot-connector/wiki/Channel-Twilio)
+* Cisco Spark
+* Microsoft Teams
+* Skype
+* Twitter Direct Message
 
 You can find more information on each channel in the [wiki](https://github.com/RecastAI/bot-connector/wiki)
 
 More will be added, and you can [contribute](https://github.com/RecastAI/bot-connector/blob/master/CONTRIBUTING.md) if you want to, and add a thumbs up for the channel you want to see implemented first ;)
 (To do so, fork this repo, add a thumbs up and make a PR!)
 
-* Cisco Spark 👍👍
+
 * Discord 👍👍
 * Line 👍
-* Microsoft Teams 👍
 * Ryver 👍
-* Skype 👍
 * Viber
 * Wechat 👍👍
 * Zinc.it 👍
-* Twitter 👍
 * Salesforce 
 
 You can find the current roadmap [here](https://github.com/RecastAI/bot-connector/projects/1).
