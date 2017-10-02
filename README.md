@@ -4,11 +4,11 @@
 
 Bot Connector allows you to connect your bot to multiple messaging channels.
 
-It provides a higher level API to manage several messaging platforms at once, and lets you focus on your bot by using a simple and unique format to talk to the entire world.
+It provides a higher level API to manage several messaging platforms at once and lets you focus on your bot by using a simple and unique format to talk to the entire world.
 
 ## Documentation
 
-You can see the API documentation [here](https://recastai.github.io/bot-connector/)
+You can see the API documentation [here](https://recastai.github.io/bot-connector/).
 
 Or generate the documentation with the following command:
 ```bash
@@ -28,13 +28,13 @@ Bot Connector supports the following channels:
 * [Microsoft Bot Framework (Skype, Teams, Cortana,...)](https://github.com/RecastAI/bot-connector/wiki/Channel-Microsoft-Bot-Framework)
 * [Twitter](https://github.com/RecastAI/bot-connector/wiki/Channel-Twitter)
 
-You can find more information on each channel in the [wiki](https://github.com/RecastAI/bot-connector/wiki)
+You can find more information on each channel in the [wiki](https://github.com/RecastAI/bot-connector/wiki).
 
-More will be added, and you can [contribute](https://github.com/RecastAI/bot-connector/blob/master/CONTRIBUTING.md) if you want to, and add a thumbs up for the channel you want to see implemented first ;)
+More will be added and you can [contribute](https://github.com/RecastAI/bot-connector/blob/master/CONTRIBUTING.md) if you want to. Also, add a thumbs up for the channel you want to see implemented first ;)
 (To do so, fork this repo, add a thumbs up and make a PR!)
 
 
-* Discord 👍👍
+* Discord 👍👍👍
 * Line 👍
 * Ryver 👍
 * Viber
@@ -52,7 +52,7 @@ In order to run the connector you need MongoDB installed and running. The config
 
 ### Installation
 
-Clone the repository and install the dependencies
+Clone the repository and install the dependencies.
 
 ```sh
 git clone https://github.com/RecastAI/bot-connector.git
@@ -68,7 +68,7 @@ yarn start-dev
 
 #### Setup your connector
 
-First of all, you need to create a connector with the Bot Connector's API.
+First, you need to create a connector with the Bot Connector's API.
 ```sh
 curl -X POST 'http://localhost:8080/connectors' --data 'url=YOUR_CONNECTOR_ENDPOINT_URL'
 ```
@@ -80,32 +80,32 @@ yarn install
 yarn start
 ```
 
-Now that your bot (well, your code) and the Bot Connector are running, you have to create channels. Channel is the actual link between your connector and a specific service like Messenger, Slack or Kik. A connector can have multiple channels.
+Now that your bot (well, your code) and the Bot Connector are running, you will need to create channels. Channel is the actual link between your connector and a specific service like Messenger, Slack or Kik. A connector can have multiple channels.
 
 ## How it works
 
 There are two distinct flows:
-* your bot receive a message from a channel
-* your bot send a message to a channel
+* Your bot receive a message from a channel
+* Your bot send a message to a channel
 
 This pipeline allows us to have an abstraction of messages independent of the platform and implement only a few functions for each messaging platform (input and output parsing).
 
 #### Receive a message
 
 The Bot Connector posts on your connector's endpoint each time a new message arrives from a channel.
-* a new message is received by Bot Connector
-* the message is parsed by the corresponding service
-* the message is saved in MongoDB
-* the message is post to the connector endpoint
+* A new message is received by Bot Connector
+* The message is parsed by the corresponding service
+* The message is saved in MongoDB
+* The message is post to the connector endpoint
 
 ![BotConnector-Receive](https://cdn.recast.ai/bot-connector/flow-1.png)
 
 #### Post a message
 
 To send a new message, you have to post it to Bot Connector's API
-* the messages are saved in MongoDB
-* the messages are formatted by the corresponding service to match the channel's format
-* the messages are sent by Bot Connector to the corresponding channel
+* The messages are saved in MongoDB
+* The messages are formatted by the corresponding service to match the channel's format
+* The messages are sent by Bot Connector to the corresponding channel
 
 ![BotConnector-Sending](https://cdn.recast.ai/bot-connector/flow-2.png)
 
