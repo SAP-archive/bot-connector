@@ -12,7 +12,7 @@ export default class WebhooksController {
    */
   static async forwardMessage (req, res) {
     const { channel_id } = req.params
-    let channel = await models.Channel.findById(channel_id).populate({ path: 'children' })
+    let channel = await models.Channel.findById(channel_id).populate('children').populate('connector')
 
     if (!channel) {
       throw new NotFoundError('Channel')
