@@ -29,7 +29,7 @@ If you want to add a new channel, please check this [wiki page](https://github.c
 
 #### Installation
 ```sh
-$ git clone https://github.com/RecastAI/Connector.git
+$ git clone https://github.com/RecastAI/bot-connector.git
 $ cd Connector
 $ yarn
 ```
