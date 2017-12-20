@@ -1,5 +1,8 @@
 ![Bot Conector Logo](https://cdn.recast.ai/bot-connector/bot-connector-logo.png)
 
+| [Supported Channels](#supported-channels) | [Getting Started](#getting-started) | [How it works](#how-it-works) | [Messages Formats](#messages_format) | [Getting Started with Recast.AI](#getting_started_with_recastai) | [License](#license) |
+|---|---|---|---|---|---|
+
 # Bot Connector
 
 Bot Connector allows you to connect your bot to multiple messaging channels.
@@ -239,6 +242,19 @@ If you encounter any issue, please follow this [guide](https://github.com/Recast
 ### Contribution
 
 Want to contribute? Great! Please check this [guide](https://github.com/RecastAI/bot-connector/blob/master/CONTRIBUTING.md).
+
+## Getting started with Recast.AI
+
+We build products to help enterprises and developers have a better understanding of user inputs.
+
+-   **NLP API**: a unique API for text processing, and augmented training.
+-   **Bot Building Tools**: all you need to create smart bots powered by Recast.AI's NLP API. Design even the most complex conversation flow, use all rich messaging formats and connect to external APIs and services.
+-   **Bot Connector API**: standardizes the messaging format across all channels, letting you connect your bots to any channel in minutes.
+
+Learn more about:
+
+| [API Documentation](https://recast.ai/docs/api-reference/) | [Discover the platform](https://recast.ai/docs/create-your-bot) | [First bot tutorial](https://recast.ai/blog/build-your-first-bot-with-recast-ai/) | [Advanced NodeJS tutorial](https://recast.ai/blog/nodejs-chatbot-movie-bot/) | [Advanced Python tutorial](https://recast.ai/blog/python-cryptobot/) |
+|---|---|---|---|---|
 
 ### License
 
