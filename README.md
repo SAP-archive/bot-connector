@@ -1,6 +1,6 @@
 ![Bot Conector Logo](https://cdn.recast.ai/bot-connector/bot-connector-logo.png)
 
-| [Supported Channels](#supported-channels) | [Getting Started](#getting-started) | [How it works](#how-it-works) | [Messages Formats](#messages_format) | [Getting Started with Recast.AI](#getting_started_with_recastai) | [License](#license) |
+| [Supported Channels](#supported-channels) | [Getting Started](#getting-started) | [How it works](#how-it-works) | [Messages Formats](#messages-format) | [Getting Started with Recast.AI]( #getting-started-with-recastai) | [License](#license) |
 |---|---|---|---|---|---|
 
 # Bot Connector
