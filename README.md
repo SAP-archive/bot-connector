@@ -3,6 +3,10 @@
 | [Supported Channels](#supported-channels) | [Getting Started](#getting-started) | [How it works](#how-it-works) | [Messages Formats](#messages-format) | [Getting Started with Recast.AI]( #getting-started-with-recastai) | [License](#license) |
 |---|---|---|---|---|---|
 
+<div>
+<a href="https://slack.recast.ai/">💬 Questions / Comments? Join the discussion on our community Slack channel!</a>
+</div>
+
 # Bot Connector
 
 Bot Connector allows you to connect your bot to multiple messaging channels.
