@@ -134,6 +134,13 @@ export default class Telegram extends Template {
           text: ['```'].concat(buttons.map(({ title, value }) => `${value} - ${title}`)).concat('```').join('\n'),
         })),
       }
+    case 'customMarkup':
+      return {
+          ...reply,
+          type: 'customMarkup',
+          body: _.get(content, 'text'),
+          keyboard: _.get(content, 'markup'),
+      }
     default:
       throw new BadRequestError('Message type non-supported by Telegram')
     }
@@ -159,6 +166,8 @@ export default class Telegram extends Template {
       for (const elem of body) {
         await agent.post(`${url}/sendMessage`, { chat_id: to, text: elem, parse_mode: 'Markdown' })
       }
+    } else if (type === 'customMarkup') {
+        await agent.post(`${url}/sendMessage`, { chat_id: to, text: body, reply_markup: keyboard, parse_mode: 'Markdown' })
     } else {
       await agent.post(`${url}/${method}`, { chat_id: to, [type]: body })
     }
