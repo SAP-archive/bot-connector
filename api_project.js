@@ -1,14 +1,1 @@
-define({
-  "name": "Bot Connector API Documentation",
-  "version": "0.0.0",
-  "title": "Bot Connector API Documentation",
-  "description": "",
-  "sampleUrl": false,
-  "apidoc": "0.2.0",
-  "generator": {
-    "name": "apidoc",
-    "time": "2016-12-04T19:17:22.952Z",
-    "url": "http://apidocjs.com",
-    "version": "0.16.1"
-  }
-});
+define({  "name": "SAP Bot Connector API Documentation",  "version": "1.0.0",  "title": "SAP Bot Connector API Documentation",  "description": "",  "sampleUrl": false,  "defaultVersion": "0.0.0",  "apidoc": "0.3.0",  "generator": {    "name": "apidoc",    "time": "2019-01-17T02:23:33.133Z",    "url": "http://apidocjs.com",    "version": "0.17.7"  }});
