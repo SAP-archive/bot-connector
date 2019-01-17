@@ -1,13 +1,7 @@
-import Connector from './Connector.model'
-import Channel from './Channel.model'
-import Message from './Message.model'
-import Participant from './Participant.model'
-import Conversation from './Conversation.model'
-
-export default {
-  Connector,
-  Channel,
-  Message,
-  Participant,
-  Conversation,
-}
+export Connector from './connector'
+export Channel from './channel'
+export Message from './message'
+export Participant from './participant'
+export Conversation from './conversation'
+export GetStartedButton from './get_started_button'
+export PersistentMenu from './persistent_menu'

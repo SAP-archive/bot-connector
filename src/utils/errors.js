@@ -1,103 +1,100 @@
-import {
-  Logger,
+import { logger } from '../utils'
 
-  renderBadRequest,
-  renderForbidden,
-  renderUnauthorized,
-  renderNotFound,
-  renderConflict,
-  renderInternalServerError,
-  renderStopPipeline,
-  renderServiceUnavailable,
-} from '../utils'
+export class AppError extends Error {
+  constructor (message = '', results = null, status = 500) {
+    super(message)
+    this.constructor = AppError
+    // eslint-disable-next-line no-proto
+    this.__proto__ = AppError.prototype
+    this.name = this.constructor.name
+    Error.captureStackTrace(this, this.constructor)
+    this.status = status
+    this.content = { message, results }
+  }
+  render (res) {
+    return res.status(this.status).json(this.content)
+  }
+}
 
 /**
  * 400 - Bad request
  */
-export class BadRequestError {
-  constructor (message = null, results = null) {
-    this.content = { message, results }
+export class BadRequestError extends AppError {
+  constructor (message, results) {
+    super(message, results, 400)
   }
 }
 
 /**
  * 401 - Forbidden
  */
-export class ForbiddenError {
-  constructor (message = 'Request can not be processed with your role', results = null) {
-    this.content = { message, results }
+export class ForbiddenError extends AppError {
+  constructor (message = 'Request can not be processed with your role', results) {
+    super(message, results, 401)
   }
 }
 
 /**
  * 403 - Unauthorized
  */
-export class UnauthorizedError {
-  constructor (message = 'Request can not be processed without authentication', results = null) {
-    this.content = { message, results }
+export class UnauthorizedError extends AppError {
+  constructor (message = 'Request can not be processed without authentication', results) {
+    super(message, results, 403)
   }
 }
 
 /**
  * 404 - Not found
  */
-export class NotFoundError {
-  constructor (target = 'Model', results = null) {
-    this.content = { results, message: `${target} not found` }
+export class NotFoundError extends AppError {
+  constructor (target = 'Model', results) {
+    const message = `${target} not found`
+    super(message, results, 404)
   }
 }
 
-/**
+/*
  * 409 - Conflict
  */
-export class ConflictError {
-  constructor (message, results = null) {
-    this.content = { results, message }
+export class ConflictError extends AppError {
+  constructor (message, results) {
+    super(message, results, 409)
   }
 }
 
-/**
+/*
  * 503 - Service unavailable
  */
-export class ServiceError {
-  constructor (message, results = null) {
-    this.content = { message, results }
+export class ServiceError extends AppError {
+  constructor (message, results) {
+    super(message, results, 503)
   }
 }
 
 /**
- * Used to stop the pipeline
+ * 200 - Stop Pipeline
  */
 export class StopPipeline {
   constructor (content) {
+    logger.warning('Abuse of JS exception mechanism')
     this.content = content
+  }
+  render (res) {
+    return res.status(200).send(this.content)
   }
 }
 
 /**
  * Render the appropriate error
  */
-export const renderConnectorError = (res, err) => {
+export const renderError = (res, err) => {
+  if (err instanceof AppError || err instanceof StopPipeline) {
+    return err.render(res)
+  }
+  logger.error('Internal Server Error', (err && err.stack) || (err && err.message) || err)
+
+  // Prevent sending twice a response in case of
+  // forwarding message from a channel to a bot
   if (res.headersSent) { return }
-
-  if (err instanceof StopPipeline) {
-    return renderStopPipeline(res, err.content)
-  }
-
-  if (err instanceof NotFoundError) {
-    return renderNotFound(res, err.content)
-  } else if (err instanceof BadRequestError) {
-    return renderBadRequest(res, err.content)
-  } else if (err instanceof ForbiddenError) {
-    return renderForbidden(res, err.content)
-  } else if (err instanceof UnauthorizedError) {
-    return renderUnauthorized(res, err.content)
-  } else if (err instanceof ConflictError) {
-    return renderConflict(res, err.content)
-  } else if (err instanceof ServiceError) {
-    return renderServiceUnavailable(res, err.content)
-  }
-
-  Logger.error('Internal server error', (err && err.stack) || (err && err.message) || err)
-  return renderInternalServerError(res, err)
+  return res.status(500).json(err)
 }

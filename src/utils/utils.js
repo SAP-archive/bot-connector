@@ -8,6 +8,11 @@ import http from 'http'
 import fs from 'fs'
 import request2 from 'superagent'
 import tmp from 'tmp'
+import kue from 'kue'
+import _ from 'lodash'
+import { Message, Participant } from '../models'
+import { logger } from './index'
+import messageQueue from './message_queue'
 
 export function getWebhookToken (id, slug) {
   return md5(id.toString().split('').reverse().join(''), slug)
@@ -19,20 +24,17 @@ export function getTwitterWebhookToken (first, second) {
   return 'sha256='.concat(hmac.digest('base64'))
 }
 
-export function deleteTwitterWebhook (T, webhookToken) {
+export function deleteTwitterWebhook (T, webhookToken, envName) {
+  T.config.app_only_auth = false
   return new Promise((resolve, reject) => {
-    T._buildReqOpts('DELETE', 'account_activity/webhooks/'.concat(webhookToken), {}, false, (err, reqOpts) => {
-      if (err) {
-        reject(err)
-        return
-      }
-      T._doRestApiRequest(reqOpts, {}, 'DELETE', (err) => {
-        if (err) {
-          return reject(err)
-        }
-        resolve()
+    T._buildReqOpts('DELETE',
+      `account_activity/all/${envName}/webhooks/${webhookToken}`, {}, false, (err, reqOpts) => {
+        if (err) { return reject(err) }
+        T._doRestApiRequest(reqOpts, {}, 'DELETE', (err) => {
+          if (err) { return reject(err) }
+          return resolve()
+        })
       })
-    })
   })
 }
 
@@ -104,22 +106,93 @@ export function noop () {
 }
 
 /**
- * Invoke an async service method
- */
-export async function invoke (serviceName, methodName, args) {
-  return global.services[serviceName][methodName](...args)
-}
-
-/**
- * Invoke a sync service method
- */
-export function invokeSync (serviceName, methodName, args) {
-  return global.services[serviceName][methodName](...args)
-}
-
-/**
  * Check if an url is valid
  */
 export const isInvalidUrl = url => (!url || (!is.url(url) && !(/localhost/).test(url)))
 
 export const arrayfy = (content) => [].concat.apply([], [content])
+
+export function sendToWatchers (convId, msgs) {
+  return new Promise((resolve, reject) => {
+    messageQueue.getQueue().create(convId, msgs)
+      .save(err => {
+        if (err) { return reject(err) }
+        resolve()
+      })
+  })
+}
+
+export function removeOldRedisMessages () {
+  const now = Date.now()
+  // -1 means that we don't limit the number of results, we could set that to 1000
+  kue.Job.rangeByState('inactive', 0, -1, 'asc', (err, messages) => {
+    if (err) { return logger.error(`Error while getting messages from Redis: ${err}`) }
+    messages.forEach(msg => {
+      if (now - msg.created_at > 10 * 1000) { msg.remove() }
+    })
+  })
+}
+
+export async function findUserRealName (conversation) {
+  const participants = await Participant.find({ conversation: conversation._id })
+  const users = participants.filter(p => !p.isBot && !p.type === 'agent')
+  if (users.length === 0) {
+    return `Anonymous user from ${conversation.channel.type}`
+  }
+  const user = users[0]
+
+  if (user && user.data && user.data.userName) {
+    return user.userName
+  }
+  if (user && user.data && user.data.first_name && user.data.last_name) {
+    return `${user.data.first_name} ${user.data.last_name}`
+  }
+  return `Anonymous user from ${conversation.channel.type}`
+}
+
+export async function messageHistory (conversation) {
+  const lastMessages = await Message
+    .find({ conversation: conversation._id })
+    .sort({ receivedAt: -1 })
+    .populate('participant')
+    .exec()
+
+  return lastMessages
+}
+
+export function formatMessageHistory (history) {
+  return history
+    .map(m => {
+      const message = formatUserMessage(m)
+      switch (m.participant.type) {
+      case 'bot':
+        return `<b>Bot</b>: ${message}`
+      case 'agent':
+        return `<b>Agent</b>: ${message}`
+      default:
+        return `<b>User</b>: ${message}`
+      }
+    })
+    .concat('This is the history of the conversation between the user and the bot:')
+    .reverse()
+}
+
+export function formatUserMessage (message) {
+  switch (message.attachment.type) {
+  case 'text':
+    return message.attachment.content
+  case 'picture':
+    return '[Image]'
+  default:
+    return '[Rich message]'
+  }
+}
+
+_.mixin({
+  sortByKeys: (obj, comparator) =>
+     _(obj).toPairs()
+    .sortBy(
+      pair => comparator ? comparator(pair[1], pair[0]) : 0
+    )
+    .fromPairs(),
+})

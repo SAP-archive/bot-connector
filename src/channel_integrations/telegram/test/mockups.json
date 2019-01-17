@@ -1,0 +1,205 @@
+[
+  {
+    "json": {
+      "type": "quickReplies",
+      "content": {
+        "title": "Quick reply title",
+        "buttons": [
+          {
+            "value": "quick reply payload1",
+            "title": "quick reply text1"
+          },
+          {
+            "value": "quick reply payload2",
+            "title": "quick reply text2"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "chatId": "",
+      "type": "card",
+      "to": "",
+      "token": "",
+      "body": "*Quick reply title*\n****",
+      "keyboard": [
+        [
+          {
+            "text": "quick reply text1",
+            "callback_data": "quick reply payload1"
+          }
+        ],
+        [
+          {
+            "text": "quick reply text2",
+            "callback_data": "quick reply payload2"
+          }
+        ]
+      ]
+    }
+  },
+  {
+    "json": {
+      "type": "quickReplies",
+      "content": {
+        "title": "Quick reply title",
+        "buttons": [
+          {
+            "title": "t1",
+            "value": "v1"
+          },
+          {
+            "title": "t2",
+            "value": "v2"
+          },
+          {
+            "title": "t3",
+            "value": "v3"
+          },
+          {
+            "title": "t4",
+            "value": "v4"
+          },
+          {
+            "title": "t5",
+            "value": "v5"
+          },
+          {
+            "title": "t6",
+            "value": "v6"
+          },
+          {
+            "title": "t7",
+            "value": "v7"
+          },
+          {
+            "title": "t8",
+            "value": "v8"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "chatId": "",
+      "type": "card",
+      "to": "",
+      "token": "",
+      "body": "*Quick reply title*\n****",
+      "keyboard": [
+        [
+          {
+            "text": "t1",
+            "callback_data": "v1"
+          },
+          {
+            "text": "t2",
+            "callback_data": "v2"
+          },
+          {
+            "text": "t3",
+            "callback_data": "v3"
+          }
+        ],
+        [
+          {
+            "text": "t4",
+            "callback_data": "v4"
+          },
+          {
+            "text": "t5",
+            "callback_data": "v5"
+          },
+          {
+            "text": "t6",
+            "callback_data": "v6"
+          }
+        ],
+        [
+          {
+            "text": "t7",
+            "callback_data": "v7"
+          },
+          {
+            "text": "t8",
+            "callback_data": "v8"
+          }
+        ]
+      ]
+    }
+  },
+  {
+    "json": {
+      "type": "carousel",
+      "content": [
+        {
+          "title": "Card 1 title",
+          "subtitle": "Card 1 subtitle",
+          "imageUrl": "image1",
+          "buttons": [
+            {
+              "title": "t1",
+              "value": "v1",
+              "type": "postback"
+            },
+            {
+              "title": "t2",
+              "value": "v2",
+              "type": "web_url"
+            }
+          ]
+        },
+        {
+          "title": "Card 2 title",
+          "subtitle": "Card 2 subtitle",
+          "imageUrl": "image2",
+          "buttons": [
+            {
+              "title": "t3",
+              "value": "v3",
+              "type": "postback"
+            },
+            {
+              "title": "t4",
+              "value": "v4",
+              "type": "postback"
+            }
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "body": [
+        "*Card 1 title*\n[Card 1 subtitle](image1)",
+        "*Card 2 title*\n[Card 2 subtitle](image2)"
+      ],
+      "chatId": "",
+      "keyboard": [
+        [
+          {
+            "callback_data": "v1",
+            "text": "t1"
+          },
+          {
+            "text": "t2",
+            "url": "v2"
+          }
+        ],
+        [
+          {
+            "callback_data": "v3",
+            "text": "t3"
+          }
+        ],
+        [
+          {
+            "callback_data": "v4",
+            "text": "t4"
+          }
+        ]
+      ],
+      "to": "",
+      "token": "",
+      "type": "carousel"
+    }
+  }
+]

@@ -1,100 +1,162 @@
 {
-  "name": "connector",
-  "version": "0.0.0",
-  "description": "Recast.AI Bot Connector",
-  "main": "src/index.js",
+  "name": "sap-botconnector",
+  "version": "1.0.0",
+  "main": "index.js",
   "scripts": {
-    "lint": "eslint src",
-    "start": "npm run build && cross-env NODE_ENV=production node dist/index.js",
-    "start-dev": "cross-env NODE_ENV=development nodemon src/index.js --exec babel-node",
-    "test": "cross-env NODE_ENV=test babel-node src/test.js",
+    "docs": "./node_modules/.bin/apidoc -i src -o docs",
+    "lint": "./node_modules/eslint/bin/eslint.js src",
+    "start": "npm run build && NODE_ENV=production node dist/index.js",
+    "start:dev": "NODE_ENV=development nodemon src/index.js --exec babel-node",
+    "start:dev:debug": "NODE_ENV=development nodemon src/index.js --inspect --exec babel-node",
+    "test": "NODE_ENV=test node ./node_modules/mocha/bin/mocha --recursive --require babel-core/register --exit --timeout 2500 'src/channel_integrations/**/test/**/*.js' 'test/**/*.js'",
+    "test:debug": "NODE_ENV=test node ./node_modules/mocha/bin/mocha --inspect-brk --recursive --require babel-core/register --exit 'src/channel_integrations/**/test/**/*.js' 'test/**/*.js'",
+    "test:coverage": "NODE_ENV=test ./node_modules/.bin/nyc ./node_modules/.bin/mocha --recursive --exit --timeout 10000 'src/channel_integrations/**/test/**/*.js' 'test/**/*.js'",
     "build": "babel src --out-dir dist",
-    "deploy": "./deploy.sh",
-    "doc": "apidoc -i src/ -o doc/"
+    "build:production": "NODE_ENV=production babel src --out-dir dist"
   },
-  "repository": {
-    "type": "git",
-    "url": "git@git.recast.ai:recast/connector.git"
+  "license": "MIT",
+  "apidoc": {
+    "name": "SAP Bot Connector API Documentation",
+    "version": "1.0.0",
+    "title": "SAP Bot Connector API Documentation",
+    "description": ""
   },
-  "author": "Recast <jerome.houdan@recast.ai> (https://recast.ai)",
-  "license": "ISC",
   "eslintConfig": {
     "extends": [
       "zavatta"
     ],
+    "env": {
+      "mocha": true
+    },
+    "globals": {
+      "models": false,
+      "controllers": false,
+      "services": false,
+      "config": false,
+      "Map": false,
+      "Promise": false
+    },
     "rules": {
+      "indent": [
+        "error",
+        2
+      ],
+      "max-len": [
+        "warn",
+        {
+          "code": 100
+        }
+      ],
+      "no-case-declarations": 0,
       "no-sync": 0,
-      "no-undef": 0,
-      "id-length": 0,
+      "prefer-spread": 0,
       "camelcase": 0,
+      "id-length": 0,
       "no-inline-comments": 0,
-      "max-nested-callbacks": 0
+      "guard-for-in": 0,
+      "no-useless-call": 0,
+      "require-await": 0,
+      "no-undefined": 0
     }
   },
   "babel": {
     "presets": [
-      "es2015",
-      "stage-0"
+      "stage-0",
+      "env"
     ],
+    "env": {
+      "test": {
+        "plugins": [
+          "istanbul"
+        ]
+      }
+    },
     "plugins": [
-      [
-        "coverage",
-        {
-          "only": "src/*/"
-        }
-      ],
+      "transform-class-properties",
       "transform-runtime"
     ]
   },
-  "apidoc": {
-    "name": "Bot Connector API Documentation",
-    "version": "0.0.0",
-    "title": "Bot Connector API Documentation",
-    "description": ""
+  "nyc": {
+    "reporter": [
+      "html",
+      "text-summary"
+    ],
+    "require": [
+      "babel-register"
+    ],
+    "sourceMap": false,
+    "instrument": false
   },
   "dependencies": {
-    "@slack/client": "^3.6.0",
-    "babel-plugin-transform-runtime": "^6.15.0",
+    "alexa-verifier": "^1.0.0",
+    "archiver": "^1.3.0",
+    "ask-sdk": "^2.0.6",
+    "babel-core": "^6.23.1",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-stage-0": "^6.24.1",
+    "bluebird": "^3.5.1",
     "blueimp-md5": "^2.5.0",
-    "body-parser": "^1.15.2",
-    "botbuilder": "^3.8.4",
+    "body-parser": "^1.18.2",
+    "botbuilder": "3.12.0",
     "callr": "^1.0.0",
-    "chai-spies": "^0.7.1",
-    "cors": "^2.8.1",
-    "cross-env": "3.1.3",
+    "chai": "^4.1.2",
+    "chai-http": "^4.0.0",
+    "content-type": "^1.0.2",
     "crypto": "^0.0.3",
-    "eslint": "^3.7.1",
+    "eslint": "^3.10.2",
     "eslint-config-zavatta": "^4.2.0",
-    "express": "^4.14.0",
-    "file-type": "^5.2.0",
+    "express": "^4.16.2",
+    "fbgraph": "^1.4.1",
+    "file-type": "^4.3.0",
     "filter-object": "^2.1.0",
+    "http": "^0.0.0",
+    "intercom-client": "^2.9.1",
     "is_js": "^0.9.0",
-    "istanbul": "^0.4.5",
-    "lodash": "^4.16.4",
-    "mocha": "^3.1.2",
-    "mongoose": "^4.6.3",
-    "node-sparky": "^4.0.8",
+    "jsonschema": "^1.1.1",
+    "jsonwebtoken": "^8.1.0",
+    "kue": "^0.11.6",
+    "lodash": "^4.17.2",
+    "login-with-amazon": "^0.0.3",
+    "md-recast": "^0.0.2",
+    "mocha": "^5.1.0",
+    "moment": "^2.18.1",
+    "mongoose": "^4.6.8",
+    "morgan": "^1.7.0",
+    "node-sparky": "^4.0.7",
+    "nodemailer": "^4.4.0",
+    "random-words": "^0.0.1",
+    "raw-body": "^2.2.0",
     "recursive-readdir": "^2.1.0",
-    "sinon": "^1.17.6",
-    "superagent": "^2.3.0",
+    "request": "2.81.0",
+    "slug": "^0.9.1",
+    "slugify": "^1.1.0",
+    "superagent": "^3.0.0",
     "superagent-promise": "^1.1.0",
+    "tmi.js": "^1.2.1",
     "tmp": "^0.0.31",
     "tsscmp": "^1.0.5",
-    "twit": "git://github.com/dbousque/twit.git",
-    "uuid": "^3.0.1"
+    "turndown": "^4.0.1",
+    "twit": "^2.2.5",
+    "uuid": "^3.0.1",
+    "winston": "^2.4.2"
   },
   "devDependencies": {
-    "apidoc": "^0.16.1",
-    "babel-cli": "^6.16.0",
-    "babel-eslint": "^7.0.0",
-    "babel-plugin-coverage": "^1.0.0",
-    "babel-preset-es2015": "^6.16.0",
-    "babel-preset-stage-0": "^6.16.0",
-    "chai": "^3.5.0",
-    "chai-http": "^3.0.0",
-    "mocha": "^3.1.1",
-    "mock-require": "^1.3.0",
-    "nock": "^8.1.0",
-    "nodemon": "^1.11.0"
+    "apidoc": "0.17.7",
+    "babel-cli": "6.18.0",
+    "babel-eslint": "^7.1.1",
+    "babel-generator": "6.19.0",
+    "babel-plugin-istanbul": "^4.1.6",
+    "babel-plugin-transform-runtime": "^6.15.0",
+    "babel-runtime": "^6.18.0",
+    "babel-traverse": "6.19.0",
+    "babel-types": "6.19.0",
+    "expect.js": "^0.3.1",
+    "istanbul": "^0.4.5",
+    "nock": "^9.0.6",
+    "nodemon": "^1.17.5",
+    "nyc": "^11.7.1",
+    "qs": "^6.5.2",
+    "should": "^11.2.0"
   }
 }
