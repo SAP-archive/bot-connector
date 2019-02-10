@@ -41,7 +41,7 @@ More will be added, and you can contribute if you want to, and add a thumbs up f
 (To do so, fork this repo, add a thumbs up and make a PR!)
 
 
-* Discord 👍👍👍
+* Discord 👍👍👍👍
 * Ryver 👍
 * Viber
 * Wechat 👍👍
