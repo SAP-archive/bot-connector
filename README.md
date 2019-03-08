@@ -31,7 +31,7 @@ Bot Connector supports the following channels:
 * [Telegram](https://github.com/SAPConversationalAI/bot-connector/wiki/Channel-Telegram)
 * [Twilio](https://github.com/SAPConversationalAI/bot-connector/wiki/Channel-Twilio)
 * [Cisco Webex](https://github.com/SAPConversationalAI/bot-connector/wiki/Channel-Cisco)
-* [Microsoft Bot Framework (Skype, Teams, Cortana,...)](https://github.com/RecastAI/bot-connector/wiki/Channel-Microsoft-Bot-Framework)
+* [Microsoft Bot Framework (Skype, Teams, Cortana,...)](https://github.com/SAPConversationalAI/bot-connector/wiki/Channel-Microsoft-Bot-Framework)
 * [Twitter](https://github.com/SAPConversationalAI/bot-connector/wiki/Channel-Twitter)
 * Line
 
@@ -59,7 +59,7 @@ In order to run the connector you need MongoDB and Redis installed and running. 
 Clone the repository and install the dependencies
 
 ```sh
-git clone https://github.com/RecastAI/bot-connector.git
+git clone https://github.com/SAPConversationalAI/bot-connector.git
 cd bot-connector
 yarn install
 ```
@@ -80,7 +80,7 @@ yarn install
 
 You need to create a configuration file based on the following schema:
 
-config/{env}.js
+config/{env}.js (e.g. `config/development.js` for `NODE_ENV=development`)
 
 ```
 module.exports = {
@@ -120,7 +120,7 @@ yarn start:dev
 
 First of all, you need to create a connector with the Bot Connector's API.
 ```sh
-curl -X POST 'http://localhost:8080/connectors' --data 'url=YOUR_CONNECTOR_ENDPOINT_URL'
+curl -X POST 'http://localhost:8080/connectors' --data 'url=YOUR_BOT_ENDPOINT_URL'
 ```
 
 Then you need some code so the Bot Connector, via the *connector* you've just created, can send you the messages it receives. You can use the code from the *example* as a starter.
@@ -130,7 +130,7 @@ yarn install
 yarn start
 ```
 
-Now that your bot (well, your code) and the Bot Connector are running, you have to create channels. A channel is the actual link between your connector and a specific service like Messenger, Slack or Kik. One connector can have multiple channels.
+Now that your bot (well, your code) and the Bot Connector are running, you have to create channels. A channel is the actual link between your bot (the connector) and a specific service like Messenger, Slack or Kik. One connector can have multiple channels.
 
 ## How it works
 
@@ -142,11 +142,11 @@ This pipeline allows us to have an abstraction of messages independent of the pl
 
 #### Receive a message
 
-The Bot Connector posts on your connector's endpoint each time a new message arrives from a channel.
+The Bot Connector posts on the endpoint stored with the connector each time a new message arrives from a channel.
 * a new message is received by Bot Connector
 * the message is parsed by the corresponding service
 * the message is saved in MongoDB
-* the message is post to the connector endpoint
+* the message is post to the bot endpoint
 
 ![BotConnector-Receive](https://cdn.cai.tools.sap/bot-connector/flow-1.png)
 

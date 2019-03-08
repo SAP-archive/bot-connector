@@ -3,4 +3,7 @@ node_modules
 npm-debug.log
 dist
 coverage
-doc
+docs
+config/*
+-config/index.js
+-config/test.js
