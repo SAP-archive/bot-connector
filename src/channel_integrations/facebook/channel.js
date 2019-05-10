@@ -22,6 +22,7 @@ import {
 } from './sdk'
 import { facebookCodesMap } from './constants'
 import { GetStartedButton, PersistentMenu } from '../../models'
+import { formatMarkdownHelper } from '../../utils/utils'
 
 export default class Messenger extends AbstractChannelIntegration {
 
@@ -197,6 +198,10 @@ export default class Messenger extends AbstractChannelIntegration {
       }
       return { type }
     })
+  }
+
+  formatMarkdown (message) {
+    return formatMarkdownHelper(message, true)
   }
 
   formatOutgoingMessage (conversation, message, opts) {

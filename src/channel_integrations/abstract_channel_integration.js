@@ -204,6 +204,31 @@ export class AbstractChannelIntegration {
   formatOutgoingMessage (conversation, message, context) { return message }
 
   /**
+   * Format Markdown the way it's supported by the external service
+   */
+  formatMarkdown (message) {
+    const modifyTextLink = (result) => result.replace(/\[|\]/g, '')
+    const modifyEmptyLink = (result) => result.replace(/\(|\)|\[|\]/g, '')
+    const fixSingleStars = (result) => result.replace(/^\*|\*$/gm, '\'')
+    const fixSingleUnderscore = (result) => result.replace(/^_|_$/gm, '\'')
+    if (message.attachment.type === 'text') {
+      message.attachment.content = message.attachment.content
+        .replace(/_(.*?)_/gm, fixSingleUnderscore)
+        .replace(/\*(.*?)\*/gm, fixSingleStars)
+        .replace(/\[.+\]\(.*\)/gm, modifyTextLink)
+        .replace(/\[\]\(.*\)/g, modifyEmptyLink)
+    }
+    if (message.attachment.type === 'quickReplies') {
+      message.attachment.content.title = message.attachment.content.title
+        .replace(/_(.*?)_/gm, fixSingleUnderscore)
+        .replace(/\*(.*?)\*/gm, fixSingleStars)
+        .replace(/\[.+\]\(.*\)/gm, modifyTextLink)
+        .replace(/\[\]\(.*\)/g, modifyEmptyLink)
+    }
+    return message
+  }
+
+  /**
    * Sends response message to the channel.
    * @param {Conversation} conversation The message's conversation
    * @param {Object} message The pre-formatted message returned from {@link parseIncomingMessage}

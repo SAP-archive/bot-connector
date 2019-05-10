@@ -8,6 +8,7 @@ import AbstractChannelIntegration from '../abstract_channel_integration'
 import { logger } from '../../utils'
 import { BadRequestError, StopPipeline } from '../../utils/errors'
 import { microsoftParseMessage, microsoftGetBot, microsoftMakeAttachement } from './utils'
+import { formatMarkdownHelper } from '../../utils/utils'
 
 const VIDEO_AS_LINK_HOSTS = [
   'youtube.com',
@@ -75,6 +76,10 @@ export default class MicrosoftTemplate extends AbstractChannelIntegration {
       msg.attachment = { type: 'text', content: message.text }
     }
     return msg
+  }
+
+  formatMarkdown (message) {
+    return formatMarkdownHelper(message, false, false)
   }
 
   async formatOutgoingMessage (conversation, message, opts) {

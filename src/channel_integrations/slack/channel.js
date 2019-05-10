@@ -4,6 +4,7 @@ import request from 'superagent'
 import AbstractChannelIntegration from '../abstract_channel_integration'
 import { logger } from '../../utils'
 import { BadRequestError, UnauthorizedError } from '../../utils/errors'
+import { formatMarkdownHelper } from '../../utils/utils'
 
 export default class Slack extends AbstractChannelIntegration {
 
@@ -41,6 +42,10 @@ export default class Slack extends AbstractChannelIntegration {
     }
 
     return msg
+  }
+
+  formatMarkdown (message) {
+    return formatMarkdownHelper(message, true)
   }
 
   formatOutgoingMessage (conversation, message) {

@@ -21,7 +21,7 @@
       "type": "card",
       "to": "",
       "token": "",
-      "body": "*Quick reply title*\n****",
+      "body": "Quick reply title\n",
       "keyboard": [
         [
           {
@@ -84,7 +84,7 @@
       "type": "card",
       "to": "",
       "token": "",
-      "body": "*Quick reply title*\n****",
+      "body": "Quick reply title\n",
       "keyboard": [
         [
           {
