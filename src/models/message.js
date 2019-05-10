@@ -9,6 +9,7 @@ const MessageSchema = new mongoose.Schema({
   isActive: { type: Boolean, required: true, default: true },
   data: Object,
   delay: { type: Number },
+  markdown: { type: Boolean },
   receivedAt: { type: Date, default: Date.now },
 })
 

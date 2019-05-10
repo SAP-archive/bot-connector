@@ -153,6 +153,9 @@ export default class MessagesController {
     if (message.delay) {
       newMessage.delay = message.delay
     }
+    if (message.markdown) {
+      newMessage.markdown = message.markdown
+    }
     await newMessage.save()
 
     return Promise.all([
@@ -203,8 +206,10 @@ export default class MessagesController {
       return Promise.resolve()
     }
     const channelIntegration = getChannelIntegrationByIdentifier(channelType)
-    message = await channelIntegration.formatOutgoingMessage(conversation, message, context)
-    return Promise.resolve([conversation, message, context, delay])
+    let formattedMessage = message.markdown ? channelIntegration.formatMarkdown(message) : message
+
+    formattedMessage = await channelIntegration.formatOutgoingMessage(conversation, formattedMessage, context)
+    return Promise.resolve([conversation, formattedMessage, context, delay])
   }
 
   static async delayNextMessage (delay, conversation, channelIntegration, context) {

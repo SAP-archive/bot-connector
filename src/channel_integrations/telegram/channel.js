@@ -10,6 +10,7 @@ import {
   StopPipeline,
   ValidationError,
 } from '../../utils/errors'
+import { formatMarkdownHelper } from '../../utils/utils'
 
 const agent = superAgentPromise(superAgent, Promise)
 
@@ -88,6 +89,10 @@ export default class Telegram extends AbstractChannelIntegration {
     }
   }
 
+  formatMarkdown (message) {
+    return formatMarkdownHelper(message)
+  }
+
   formatOutgoingMessage ({ channel, chatId }, { attachment }, { senderId }) {
     const { type, content } = attachment
     const reply = {
@@ -96,7 +101,6 @@ export default class Telegram extends AbstractChannelIntegration {
       to: senderId,
       token: _.get(channel, 'token'),
     }
-
     switch (type) {
     case 'text':
     case 'video':
@@ -109,7 +113,7 @@ export default class Telegram extends AbstractChannelIntegration {
         ...reply,
         type: 'card',
         photo: _.get(content, 'imageUrl'),
-        body: `*${_.get(content, 'title', '')}*\n**${_.get(content, 'subtitle', '')}**`,
+        body: `${_.get(content, 'title', '')}\n${_.get(content, 'subtitle', '')}`,
         keyboard: tgKeyboardLayout(content.buttons.map(tgFormatButton)),
       }
     case 'list':
@@ -176,6 +180,7 @@ export default class Telegram extends AbstractChannelIntegration {
           chat_id: chatId,
           text: body,
           reply_markup: { keyboard, one_time_keyboard: true },
+          parse_mode: 'Markdown',
         })
       } catch (err) {
         this.logSendMessageError(err, type)
@@ -239,6 +244,7 @@ export default class Telegram extends AbstractChannelIntegration {
           chat_id: chatId,
           [type]: body,
           reply_markup: { keyboard, one_time_keyboard: true },
+          parse_mode: 'Markdown',
         })
       } catch (err) {
         this.logSendMessageError(err, type, method)

@@ -188,6 +188,52 @@ export function formatUserMessage (message) {
   }
 }
 
+export function formatMarkdownHelper (message, linkMarkdown = false, boldItalicMarkdown = true) {
+  const applyRegex = (content) => {
+    const starsToHash = (result) => result.replace(/\*\*/gm, '#7Uk0I2smS')
+    const underscoresToHash = (result) => result.replace(/__/gm, '#7Uk0I2smS')
+    const modifySingleStars = (result) => result.replace(/^\*|\*$/gm, '_')
+    const modifyDoubleStars = (result) => result.replace(/^\*\*|\*\*([^*]|$)/gm, starsToHash)
+    const modifyDoubleUnderscores = (result) => result.replace(/^__|__([^_]|$)/gm, underscoresToHash)
+    const modifyTextLink = (result) => result.replace(/\[|\]/g, ' ')
+    const modifyEmptyLink = (result) => result.replace(/\(|\)|\[|\]/g, '')
+    const modifyStarsSpace = (result) => result.replace(/\*[\s]+|[\s]+\*/gm, '*')
+    const modifyUnderscoresSpace = (result) => result.replace(/_[\s]+|[\s]+_/gm, '_')
+    const modifyDoubleStarsSpace = (result) => result.replace(/\*\*[\s]+|[\s]+\*\*/gm, '**')
+    const modifyDoubleUnderscoresSpace = (result) => result.replace(/__[\s]+|[\s]+__/gm, '__')
+    let formattedContent = content
+    if (boldItalicMarkdown) {
+      formattedContent = formattedContent
+        .replace(/\*\*(.*?)\*\*([^*]|$)/gm, modifyDoubleStars)
+        .replace(/__(.*?)__([^_]|$)/gm, modifyDoubleUnderscores)
+        .replace(/\*(.*?)\*/gm, modifySingleStars)
+        .replace(/#7Uk0I2smS/gm, '*')
+    }
+    if (linkMarkdown) {
+      formattedContent = formattedContent
+        .replace(/\[.+\]\(.*\)/gm, modifyTextLink)
+        .replace(/\[\]\(.*\)/g, modifyEmptyLink)
+    }
+    return formattedContent
+      .replace(/\*(.*?)\*/gm, modifyStarsSpace)
+      .replace(/_(.*?)_/gm, modifyUnderscoresSpace)
+      .replace(/\*\*(.*?)\*\*/gm, modifyDoubleStarsSpace)
+      .replace(/__(.*?)__/gm, modifyDoubleUnderscoresSpace)
+  }
+  const type = _.get(message, 'attachment.type')
+  if (type === 'text') {
+    const content = _.get(message, 'attachment.content')
+    const regexedMessage = applyRegex(content)
+    message = _.set(message, 'attachment.content', regexedMessage)
+  }
+  if (type === 'quickReplies') {
+    const content = _.get(message, 'attachment.content.title')
+    const regexedMessage = applyRegex(content)
+    message = _.set(message, 'attachment.content.title', regexedMessage)
+  }
+  return message
+}
+
 _.mixin({
   sortByKeys: (obj, comparator) =>
      _(obj).toPairs()

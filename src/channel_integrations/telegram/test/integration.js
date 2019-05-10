@@ -149,7 +149,7 @@ describe('Telegram channel', () => {
             }]],
             one_time_keyboard: true,
           },
-          text: `*${cardElement.title}*\n**${cardElement.subtitle}**`,
+          text: `${cardElement.title}\n${cardElement.subtitle}`,
         })
         const messageRequest = nock(telegramAPI)
           .post('/bottoken/sendMessage', expectedMessageBody).reply(200, {})
@@ -216,7 +216,7 @@ describe('Telegram channel', () => {
             }]],
             one_time_keyboard: true,
           },
-          text: `*${buttonsElement.title}*\n****`,
+          text: `${buttonsElement.title}\n`,
         })
         const messageRequest = nock(telegramAPI)
           .post('/bottoken/sendMessage', expectedMessageBody).reply(200, {})

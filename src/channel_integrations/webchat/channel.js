@@ -17,6 +17,10 @@ export default class Webchat extends AbstractChannelIntegration {
     }
   }
 
+  formatMarkdown (message) {
+    return message
+  }
+
   formatOutgoingMessage (conversation, message) {
     return message
   }
