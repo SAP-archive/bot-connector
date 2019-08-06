@@ -1,6 +1,6 @@
-# Project Sunset Notice
+# Sunset of Open Source Bot Connector
 
-This repository will be brought down / archived from github.com by **end of November, 2019**
+This repository will be brought down / archived from github.com by **end of November, 2019**.
 
 To enhance your overall bot building experience, we are working on implementing new features and changing the structure of [rich messages](https://cai.tools.sap/docs/concepts/structured-messages) supported by our platform.
 
