@@ -1,12 +1,8 @@
-# Sunset of Open Source Bot Connector
+# [Archieved] Open Source Bot Connector
 
-This repository will be brought down / archived from github.com by **end of November, 2019**.
+This repository has been archived as communicated earlier (August, 2019) and the source code is not maintained by SAP Conversational AI team.
 
-To enhance your overall bot building experience, we are working on implementing new features and changing the structure of [rich messages](https://cai.tools.sap/docs/concepts/structured-messages) supported by our platform.
-
-Unfortunately, this means that this repository will be unusable unless we go through a major refactor.
-
-Since all Bot Connector capabilities are integrated in our [bot building platform](https://cai.tools.sap), we’ve decided to sunset this open source repo.
+All Bot Connector capabilities are integrated in our [bot building platform](https://cai.tools.sap).
 
 If you are running a standard / customised version of open source bot connector on your platform, **please migrate to the bot connector available on our bot building platform** (hosted in on SAP Cloud Platform), which offers integration with a wide number of channels which that we plan to make more robust.
 
