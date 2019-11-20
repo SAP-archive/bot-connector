@@ -1,6 +1,6 @@
-# [Archieved] Open Source Bot Connector
+# [Archived] Open Source Bot Connector
 
-This repository has been archived as communicated earlier (August, 2019) and the source code is not maintained by SAP Conversational AI team.
+As communicated earlier in August 2019, this repository has been archived and the source code is not maintained by the SAP Conversational AI team.
 
 All Bot Connector capabilities are integrated in our [bot building platform](https://cai.tools.sap).
 
